@@ -27,4 +27,9 @@ class Task extends Model
     {
         return $this->due_date && $this->due_date < now();
     }
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
+    }
 }

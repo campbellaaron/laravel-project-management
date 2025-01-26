@@ -14,6 +14,8 @@ Route::get('/dashboard', function () {
 
 Route::get('/tasks/{task}', [TaskController::class, 'show'])->middleware('auth')->name('tasks.show');
 Route::post('/tasks', [TaskController::class, 'store'])->middleware('auth')->name('tasks.store');
+Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+
 
 
 Route::middleware('auth')->group(function () {

@@ -55,7 +55,8 @@ class TaskAssigned extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            //
+            'message' => 'You have been assigned a new task: ' . $this->task->title,
+            'task_id' => $this->task->id,
         ];
     }
 }
