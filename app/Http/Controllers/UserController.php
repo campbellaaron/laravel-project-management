@@ -8,6 +8,11 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
+    public function index()
+    {
+        $users = User::all();
+        return view("users.index", compact("users"));
+    }
     public function create()
     {
         $roles = Role::all();

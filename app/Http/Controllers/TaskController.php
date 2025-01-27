@@ -95,6 +95,15 @@ class TaskController extends Controller
         return redirect()->route('tasks.show', $task->id)->with('success', 'Task updated successfully!');
     }
 
+    public function complete(Task $task)
+    {
+        $task->completed = !$task->completed;
+        $task->save();
+
+        return redirect()->route('tasks.index');
+    }
+
+
     public function storeComment(Request $request, Task $task)
     {
         $request->validate([

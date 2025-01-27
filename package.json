@@ -17,6 +17,7 @@
         "vite": "^6.0"
     },
     "dependencies": {
-        "@tailwindcss/vite": "^4.0.0"
+        "@tailwindcss/vite": "^4.0.0",
+        "fullcalendar": "^6.1.15"
     }
 }

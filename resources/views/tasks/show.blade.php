@@ -18,6 +18,15 @@
         <p>{{ $task->due_date ? $task->due_date->format('F j, Y, g:i a') : 'No due date' }}</p>
     </div>
 
+    <form action="{{ route('tasks.complete', $task->id) }}" method="POST">
+        @csrf
+        @method('PATCH')
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md">
+            {{ $task->completed ? 'Undo Complete' : 'Complete Task' }}
+        </button>
+    </form>
+
+
     <div class="task-comments">
         <h3>Comments:</h3>
         <ul>
