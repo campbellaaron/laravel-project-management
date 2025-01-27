@@ -43,16 +43,18 @@
                 </li>
             </ul>
         </div>
-        <div class="size-6 text-inherit flex justify-start">
+        <div class="size-8 text-inherit flex justify-start items-end mt-8 relative">
             <!-- Display unread notifications count -->
             @if(auth()->user()->unreadNotifications->count() > 0)
+            <div class="flex relative">
                 <span class="badge">
-                    <x-solar-notification-unread-bold />
                     {{ auth()->user()->unreadNotifications->count() }}
                 </span>
+                Notification&lpar;s&rpar;
+            </div>
             @else
                 <div class="flex">
-                    <x-solar-notification-remove-line-duotone /> 0 Notifications
+                    <x-solar-notification-remove-line-duotone /> No New Notifications
                 </div>
             @endif
         </div>

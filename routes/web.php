@@ -16,6 +16,8 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+Route::patch('/tasks/{task}/complete', [TaskController::class, 'complete'])->name('tasks.complete');
+
 Route::middleware('auth')->group(function () {
     // Task resource route will automatically generate the 'create', 'store', 'edit', 'update', etc.
     Route::resource('tasks', TaskController::class);

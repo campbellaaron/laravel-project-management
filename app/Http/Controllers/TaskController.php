@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use App\Notifications\TaskAssigned;
@@ -13,18 +14,26 @@ class TaskController extends Controller
     // Display a list of tasks
     public function index()
     {
-        $tasks = Task::with('assignedTo')->get();
+        // Check if the user is a super admin or a normal user
+        if (auth()->user()->is_admin) {
+            // If super admin, show all tasks and eager load the 'assignedTo' and 'project' relationships
+            $tasks = Task::with(['assignedTo', 'project'])->get();
+        } else {
+            // If normal user, show only tasks assigned to the logged-in user
+            $tasks = Task::with(['assignedTo', 'project'])->where('assigned_to', auth()->id())->get();
+        }
         return view('tasks.index', compact('tasks'));
     }
 
     // Show the form for creating a new task
     public function create()
     {
-        // Fetch all users to assign the task
+        // Fetch all users and projects to assign the task
         $users = User::all();
+        $projects = Project::all();
 
         // Return the view to create a task
-        return view('tasks.create', compact('users'));
+        return view('tasks.create', compact('users', 'projects'));
     }
 
 
@@ -35,7 +44,8 @@ class TaskController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'assigned_to' => 'required|exists:users,id',
-            'due_date' => 'nullable|dateTime',
+            'due_date' => 'nullable|date',
+            'project_id' => 'required|exists:projects,id',
         ]);
 
         $task = Task::create([
@@ -43,6 +53,7 @@ class TaskController extends Controller
             'description' => $request->description,
             'assigned_to' => $request->assigned_to,
             'due_date' => $request->due_date,
+            'project_id' => $request->project_id,
         ]);
 
 
@@ -100,7 +111,8 @@ class TaskController extends Controller
         $task->completed = !$task->completed;
         $task->save();
 
-        return redirect()->route('tasks.index');
+         // Redirect back to the task page
+        return redirect()->route('tasks.show', $task->id)->with('success', 'Task status updated successfully.');
     }
 
 

@@ -44,7 +44,10 @@ class ProjectsController extends Controller
     // Display the specified project
     public function show(Project $project)
     {
-        return view('projects.show', compact('project'));
+        // Load the tasks associated with the project
+        $tasks = $project->tasks;  // Eager loading tasks for the project
+
+        return view('projects.show', compact('project', 'tasks'));
     }
 
     // Show the form for editing the specified project

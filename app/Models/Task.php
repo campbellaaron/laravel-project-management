@@ -10,7 +10,7 @@ class Task extends Model
     protected $casts = ['due_date' => 'datetime'];
 
     protected $fillable = [
-        'title', 'description', 'assigned_to', 'due_date',
+        'title', 'description', 'assigned_to', 'due_date', 'project_id'
     ];
 
     public function assignedTo()

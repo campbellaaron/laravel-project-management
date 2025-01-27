@@ -12,14 +12,26 @@
     color: #000;
 }
 
-.badge {
+.notifications-icon {
+    position: relative;
+}
+
+.notification-count {
     position: absolute;
-    top: -5px;
-    right: -5px;
+    top: 0;
+    right: 0.7rem;
+    padding: 0.2em;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
+.badge {
     background-color: red;
     color: white;
     border-radius: 50%;
-    padding: 0.5rem;
+    margin-right: 0.5em;
+    padding: 0.35rem 0.75rem;
     font-size: 0.75rem;
     font-weight: bold;
 }

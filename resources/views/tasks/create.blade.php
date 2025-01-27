@@ -34,6 +34,15 @@
         </div>
 
         <div>
+            <label for="project_id">Project</label>
+            <select name="project_id" id="project_id" required>
+                @foreach ($projects as $project)
+                    <option value="{{ $project->id }}">{{ $project->name }}</option>
+                @endforeach
+            </select>
+        </div>
+
+        <div>
             <label for="due_date">Due Date</label>
             <input type="datetime-local" name="due_date" id="due_date">
         </div>

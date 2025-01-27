@@ -5,15 +5,15 @@
 
             <div class="justify-end items-center hidden md:flex">
                 <!-- Notifications Icon -->
-                <div class="size-5 text-inherit">
+                <div class="size-8 text-inherit">
                     <!-- Display unread notifications count -->
                     @if(auth()->user()->unreadNotifications->count() > 0)
-                        <span class="badge">
-                            <x-solar-notification-unread-bold />
-                            {{ auth()->user()->unreadNotifications->count() }}
-                        </span>
+                    <div class="notifications-icon">
+                        <x-heroicon-s-bell class="text-red-600"/>
+                        <span class="notification-count">{{ auth()->user()->unreadNotifications->count() }}</span>
+                    </div>
                     @else
-                        <x-solar-notification-remove-line-duotone />
+                        <x-heroicon-o-bell class="text-sky-400" />
                     @endif
                 </div>
 

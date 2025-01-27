@@ -8,6 +8,11 @@
         <p>{{$task->description}}</p>
     </div>
 
+    <div class="task-project">
+        <h3>Project:</h3>
+        <p>{{ $task->project->name }}</p>
+    </div>
+
     <div class="task-assigned-to">
         <h3>Assigned To:</h3>
         <p>{{ $task->assignedTo->name }}</p>

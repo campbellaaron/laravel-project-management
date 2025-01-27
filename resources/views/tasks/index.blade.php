@@ -12,6 +12,7 @@
                 <tr>
                     <th scope="col" class="px-6 py-3">Title</th>
                     <th scope="col" class="px-6 py-3">Description</th>
+                    <th scope="col" class="px-6 py-3">Project</th>
                     <th scope="col" class="px-6 py-3">Assigned To</th>
                     <th scope="col" class="px-6 py-3">Due Date</th>
                     <th scope="col" class="px-6 py-3">Actions</th>
@@ -22,7 +23,8 @@
                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-300 dark:hover:bg-gray-800">
                         <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"><a href="{{ route('tasks.show', $task) }}">{{ $task->title }}</a></th>
                         <td class="px-6 py-4">{{ $task->description }}</td>
-                        <td class="px-6 py-4">{{ $task->assignedTo->name }}</td>
+                        <td class="px-6 py-4">{{ $task->project->name }}</td>
+                        <td class="px-6 py-4 bold">{{ $task->assignedTo->name }}</td>
                         <td class="px-6 py-4">{{ $task->due_date }}</td>
                         <td class="px-4 py-4 flex items-center md:items-baseline justify-between flex-col md:flex-row ">
                             <a href="{{ route('tasks.edit', $task) }}" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Edit</a>
