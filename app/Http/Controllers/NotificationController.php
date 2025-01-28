@@ -15,4 +15,13 @@ class NotificationController extends Controller
         // Redirect back to the dashboard or any other page
         return redirect()->route('dashboard');
     }
+
+    public function markSpecificNotificationAsRead($notificationId)
+    {
+        // Find the notification by ID and mark it as read
+        $notification = Auth::user()->notifications()->findOrFail($notificationId);
+        $notification->markAsRead();
+
+        return redirect()->back()->with('success', 'Notification marked as read');
+    }
 }

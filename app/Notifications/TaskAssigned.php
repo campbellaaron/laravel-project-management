@@ -9,7 +9,9 @@ use Illuminate\Notifications\Notification;
 
 class TaskAssigned extends Notification
 {
-    protected $task;
+    use Queueable;
+
+    public $task;
 
     /**
      * Create a new notification instance.
@@ -33,6 +35,7 @@ class TaskAssigned extends Notification
     {
         return [
             'task_id' => $this->task->id,
+            'task_title' => $this->task->title,
             'message' => 'You have been assigned a new task: ' . $this->task->title,
         ];
     }

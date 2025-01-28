@@ -20,7 +20,7 @@ class TaskController extends Controller
             $tasks = Task::with(['assignedTo', 'project'])->get();
         } else {
             // If normal user, show only tasks assigned to the logged-in user
-            $tasks = Task::with(['assignedTo', 'project'])->where('assigned_to', auth()->id())->get();
+            $tasks = Task::with(['assignedTo', 'project'])->where('assigned_to', auth()->id())->where('completed', false)->get();
         }
         return view('tasks.index', compact('tasks'));
     }
