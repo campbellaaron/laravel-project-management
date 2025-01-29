@@ -1,7 +1,8 @@
 @extends('layouts.app')
 
+@section('title', 'New Task')
+
 @section('content')
-    <h1>Create Task</h1>
 
     @if ($errors->any())
         <div class="alert alert-danger">
@@ -17,11 +18,17 @@
         <div>
             <label for="title">Title</label>
             <input type="text" name="title" id="title" required>
+            @error('title')
+                <p class="alert alert-danger text-xs">{{$message}}</p>
+            @enderror
         </div>
 
         <div>
             <label for="description">Description</label>
-            <textarea name="description" id="description" required></textarea>
+            <textarea name="description" id="description" rows="20" required></textarea>
+            @error('description')
+                <p class="alert alert-danger text-xs">{{$message}}</p>
+            @enderror
         </div>
 
         <div>

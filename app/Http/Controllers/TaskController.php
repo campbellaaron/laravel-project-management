@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Activity;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
+use App\Models\Comment;
 use App\Notifications\TaskAssigned;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -39,15 +41,21 @@ class TaskController extends Controller
 
     // Store a newly created task in the database
     public function store(Request $request)
-    {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'assigned_to' => 'required|exists:users,id',
-            'due_date' => 'nullable|date',
-            'project_id' => 'required|exists:projects,id',
-        ]);
+{
+    // Log the incoming request data to check if all the fields are being submitted correctly
+    \Log::info('Request data: ', $request->all());
 
+    // Validate the request
+    $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'required|string',
+        'assigned_to' => 'required|exists:users,id',
+        'due_date' => 'nullable|date',
+        'project_id' => 'required|exists:projects,id',
+    ]);
+
+    // Create the task
+    try {
         $task = Task::create([
             'title' => $request->title,
             'description' => $request->description,
@@ -56,16 +64,39 @@ class TaskController extends Controller
             'project_id' => $request->project_id,
         ]);
 
+        \Log::info('Task created: ' . $task->title);  // Log after task is created successfully
 
-        // Find the user who was assigned the task
+        // Log the activity for task creation
+        Activity::create([
+            'user_id' => auth()->id(),
+            'description' => 'Created a new task: ' . $task->title,
+        ]);
+
+        \Log::info('Activity logged for task creation: ' . $task->title);  // Log activity creation
+
+        // Continue with other activity logs (task assignment, etc.)
+        // Similar to above, log other activity actions:
         $user = User::find($request->assigned_to);
+        Activity::create([
+            'user_id' => auth()->id(),
+            'description' => 'Assigned task: ' . $task->title . ' to ' . $user->name,
+        ]);
+        \Log::info('Activity logged for task assignment: ' . $task->title . ' to ' . $user->name);
 
         // Send a notification to the assigned user
         $user->notify(new TaskAssigned($task));
 
+        \Log::info('Notification sent to: ' . $user->name);
+
         // Redirect back to the task list or show a success message
-        return redirect()->route('tasks.index')->with('success', 'Task created and user notified.');
+        return redirect()->route('tasks.show', $task->id)->with('success', 'Task created and user notified.');
+
+    } catch (\Exception $e) {
+        \Log::error("Error creating task or logging activity: " . $e->getMessage());  // Log error if something fails
+        return redirect()->route('tasks.create')->with('error', 'There was an error creating the task.');
     }
+}
+
 
     // Display the specified task
     public function show(Task $task)

@@ -36,8 +36,13 @@
                     </header>
                 @endisset
 
+                <h1 class="bg-white dark:bg-gray-800 shadow">@yield('title')</h1>
+
                 <!-- Page Content -->
                 <main class="md:w-[85vw] w-[50vw] md:mx-auto mx-2">
+                    @if (@session()->has('success'))
+                        <div>{{ session('success') }}</div>
+                    @endif
                     @yield('content')
                 </main>
             </div>

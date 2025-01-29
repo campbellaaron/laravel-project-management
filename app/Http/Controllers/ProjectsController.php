@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Activity;
 use App\Models\Task;
 use App\Models\Project;
 use App\Models\User;
@@ -32,10 +33,34 @@ class ProjectsController extends Controller
             'status' => 'required|in:open,in-progress,completed',
         ]);
 
-        Project::create([
+        $project = Project::create([
             'name' => $request->name,
             'description' => $request->description,
             'status' => $request->status,
+        ]);
+
+        // When a project is created
+        Activity::create([
+            'user_id' => auth()->id(),
+            'description' => 'Created a new project: ' . $project->name,
+        ]);
+
+        // When a project is updated
+        Activity::create([
+            'user_id' => auth()->id(),
+            'description' => 'Updated project: ' . $project->name,
+        ]);
+
+        // When a project is marked as completed
+        Activity::create([
+            'user_id' => auth()->id(),
+            'description' => 'Marked project as completed: ' . $project->name,
+        ]);
+
+        // When a project is deleted
+        Activity::create([
+            'user_id' => auth()->id(),
+            'description' => 'Deleted project: ' . $project->name,
         ]);
 
         return redirect()->route('projects.index')->with('success', 'Project created successfully!');

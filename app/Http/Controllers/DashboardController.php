@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Activity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -24,9 +25,18 @@ class DashboardController extends Controller
         // Get the newest users (last 5 registered or created)
         $newUsers = User::orderBy('created_at','desc')->take(5)->get();
 
-        // $projects = list of active projects to be added after variables are fixed
+        // Get recent activity for the user (for example, tasks they've been involved with)
+        $recentActivity = Activity::latest()->take(5)->get(); // Fetch the latest 5 activities
+
+        // Currently Open/In-Progress Projects
+        $projects = Project::withCount(['tasks' => function ($query) {
+            $query->where('completed', true);
+        }])->get();
+
+        // Completed Task stats
+        $completedTasksCount = Task::where('completed', true)->count();
 
         // Pass notifications and other data to the view
-        return view('dashboard', compact('notifications', 'latestTasks', 'newUsers'));
+        return view('dashboard', compact('notifications', 'latestTasks', 'newUsers', 'recentActivity', 'completedTasksCount', 'projects'));
     }
 }
