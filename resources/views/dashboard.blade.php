@@ -1,27 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __(':name\'s Dashboard', ['name' => auth()->user()->name]) }}
+            {{ __(':name\'s Dashboard', ['name' => auth()->user()->first_name]) }}
         </h2>
         <div class="p-1 text-gray-900 dark:text-gray-100 text-sm">
             {{ __("You're logged in!") }}
-        </div>
-        <p>
-            @if(auth()->user()->hasAnyRole(['super-admin', 'admin', 'manager']))
-                <!-- Show admin content -->
-                <p>You are an admin!</p>
-            @elseif(auth()->user()->hasRole('user'))
-                <!-- Show regular user content -->
-                <p>You are a user!</p>
-            @endif
-        </p>
-        <div>
-            <p>
-                @if(auth()->user()->hasAnyRole(['admin', 'super-admin']))
-                    <!-- Show content for users who are admins or managers -->
-                    <p>You have special permissions!</p>
-                @endif
-            </p>
         </div>
     </x-slot>
     @section('content')
@@ -50,21 +33,24 @@
                             </div>
                         </div>
 
-                        <!-- Newest Users Card -->
-                        <div class="bg-white p-4 shadow-sm rounded-lg">
-                            <h3 class="text-lg font-semibold">Newest Users</h3>
-                            <div class="">
-                                <ul class="mt-2">
-                                    @foreach ($newUsers as $user)
-                                        <li class="flex justify-between mb-2">
-                                            <span>{{ $user->name }}</span>
-                                            <span class="text-sm text-gray-500">{{ $user->created_at->format('M d, Y') }}</span>
-                                        </li>
-                                    @endforeach
-                                </ul>
-                                <a href="{{ route('users.index') }}" class="text-blue-500 text-sm mt-2 block">View all users</a>
+                        @if(auth()->user()->hasAnyRole(['super-admin', 'admin', 'manager']))
+                            <!-- Show admin content -->
+                            <!-- Newest Users Card -->
+                            <div class="bg-white p-4 shadow-sm rounded-lg">
+                                <h3 class="text-lg font-semibold">Newest Users</h3>
+                                <div class="">
+                                    <ul class="mt-2">
+                                        @foreach ($newUsers as $user)
+                                            <li class="flex justify-between mb-2">
+                                                <span>{{ $user->name }}</span>
+                                                <span class="text-sm text-gray-500">{{ $user->created_at->format('M d, Y') }}</span>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                    <a href="{{ route('users.index') }}" class="text-blue-500 text-sm mt-2 block">View all users</a>
+                                </div>
                             </div>
-                        </div>
+                        @endif
 
                         <!-- Recent Activity Card -->
                         <div class="bg-white p-4 shadow-sm rounded-lg">

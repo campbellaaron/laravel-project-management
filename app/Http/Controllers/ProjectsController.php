@@ -42,7 +42,7 @@ class ProjectsController extends Controller
         // When a project is created
         Activity::create([
             'user_id' => auth()->id(),
-            'description' => 'Created a new project: ' . $project->name,
+            'description' => 'User' . auth()->user()->first_name . ' created a new project: ' . $project->name,
         ]);
 
         // When a project is updated

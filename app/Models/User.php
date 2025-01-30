@@ -19,7 +19,8 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
     ];
@@ -50,5 +51,10 @@ class User extends Authenticatable
     public function tasks()
     {
         return $this->hasMany(Task::class, 'assigned_to');
+    }
+
+    public function getFullNameAttribute()
+    {
+        return $this->first_name .' '. $this->last_name;
     }
 }

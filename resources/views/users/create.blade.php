@@ -26,10 +26,19 @@
                     </div>
                 </div>
                 <div>
-                    <label for="name" class="block text-md font-bold text-gray-800">Name</label>
+                    <label for="first_name" class="block text-md font-bold text-gray-800">First Name</label>
                     <div class="mt-1">
-                        <input type="text" name="name" id="name" value="{{ old('name') }}" class="w-full border border-gray-800 px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:border-indigo-700" required>
-                        @error('name')
+                        <input type="text" name="first_name" id="first_name" value="{{ old('first_name') }}" class="w-full border border-gray-800 px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:border-indigo-700" required>
+                        @error('first_name')
+                            <p class="alert alert-danger text-xs">{{$message}}</p>
+                        @enderror
+                    </div>
+                </div>
+                <div>
+                    <label for="last_name" class="block text-md font-bold text-gray-800">First Name</label>
+                    <div class="mt-1">
+                        <input type="text" name="last_name" id="last_name" value="{{ old('last_name') }}" class="w-full border border-gray-800 px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:border-indigo-700" required>
+                        @error('last_name')
                             <p class="alert alert-danger text-xs">{{$message}}</p>
                         @enderror
                     </div>

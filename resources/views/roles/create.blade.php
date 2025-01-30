@@ -57,7 +57,7 @@
                         <h3 class="text-xl text-slate-100 py-4 mb-3 font-bold">Users</h3>
                         <select id="userlist" name="users[]" class="bg-slate-300  text-slate-700 text-sm md:text-base lg:text-lg border border-slate-200 rounded p-4 transition duration-300 ease focus:outline-none focus:border-slate-400 hover:border-slate-400 shadow-sm focus:shadow-md appearance-none cursor-pointer min-w-[50px]" multiple>
                             @foreach ($users as $user)
-                                <option value="{{$user->id}}" class="text-slate-900">{{$user->name}}</option>
+                                <option value="{{$user->id}}" class="text-slate-900">{{$user->full_name}}</option>
                             @endforeach
                         </select>
                     </div>
