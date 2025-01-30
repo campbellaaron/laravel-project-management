@@ -42,25 +42,7 @@ class ProjectsController extends Controller
         // When a project is created
         Activity::create([
             'user_id' => auth()->id(),
-            'description' => 'User' . auth()->user()->first_name . ' created a new project: ' . $project->name,
-        ]);
-
-        // When a project is updated
-        Activity::create([
-            'user_id' => auth()->id(),
-            'description' => 'Updated project: ' . $project->name,
-        ]);
-
-        // When a project is marked as completed
-        Activity::create([
-            'user_id' => auth()->id(),
-            'description' => 'Marked project as completed: ' . $project->name,
-        ]);
-
-        // When a project is deleted
-        Activity::create([
-            'user_id' => auth()->id(),
-            'description' => 'Deleted project: ' . $project->name,
+            'description' => auth()->user()->first_name . ' created a new project: ' . $project->name,
         ]);
 
         return redirect()->route('projects.index')->with('success', 'Project created successfully!');
@@ -96,13 +78,44 @@ class ProjectsController extends Controller
             'status' => $request->status,
         ]);
 
+        // When a project is updated
+        Activity::create([
+            'user_id' => auth()->id(),
+            'description' => auth()->user()->first_name . ' updated project: ' . $project->name,
+        ]);
+
         return redirect()->route('projects.index')->with('success', 'Project updated successfully!');
+    }
+
+    public function updateStatus(Request $request, Project $project)
+    {
+        $request->validate([
+            'status'=> ['required|in:open,in-progress,completed'],
+        ]);
+
+        $project->update(['status' => $request->status]);
+
+        Activity::create([
+            'user_id' => auth()->id(),
+            'description'=> auth()->user()->first_name . ' changed the status of '. $project->name . ' to ' . $project->status,
+        ]);
+
+        return response()->json([
+            'status' => $project->status,
+            'message' => 'Project status updated successfully',
+        ]);
     }
 
     // Remove the specified project from the database
     public function destroy(Project $project)
     {
         $project->delete();
+
+        // When a project is deleted
+        Activity::create([
+            'user_id' => auth()->id(),
+            'description' => 'Deleted project: ' . $project->name,
+        ]);
         return redirect()->route('projects.index')->with('success', 'Project deleted successfully!');
     }
 }

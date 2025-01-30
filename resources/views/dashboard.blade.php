@@ -33,8 +33,20 @@
                             </div>
                         </div>
 
+                        <!-- Recent Activity Card -->
+                        <div class="bg-white p-4 shadow-sm rounded-lg">
+                            <h3 class="text-lg font-semibold">Recent Activity</h3>
+                            <ul class="mt-2">
+                                @foreach ($recentActivity as $activity)
+                                    <li class="mb-2">
+                                        <p>{{ $activity->description }} <span class="text-sm text-gray-500">({{ $activity->created_at->diffForHumans() }})</span></p>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+
+                        <!-- Show admin content -->
                         @if(auth()->user()->hasAnyRole(['super-admin', 'admin', 'manager']))
-                            <!-- Show admin content -->
                             <!-- Newest Users Card -->
                             <div class="bg-white p-4 shadow-sm rounded-lg">
                                 <h3 class="text-lg font-semibold">Newest Users</h3>
@@ -50,28 +62,31 @@
                                     <a href="{{ route('users.index') }}" class="text-blue-500 text-sm mt-2 block">View all users</a>
                                 </div>
                             </div>
+
+                            <!-- Completed Tasks Statistics Card -->
+                            <div class="bg-white p-4 shadow-sm rounded-lg">
+                                <h3 class="text-lg font-semibold">Completed Tasks</h3>
+                                <p class="mt-2 text-2xl">{{ $completedTasksCount }}</p>
+                                <a href="{{ route('tasks.index') }}" class="text-blue-500 text-sm mt-2 block">View all completed tasks</a>
+                            </div>
+
+                            <!-- Project Progress Card -->
+                            <div class="bg-white p-4 shadow-sm rounded-lg">
+                                <h3 class="text-lg font-semibold">Project Progress</h3>
+                                <ul class="mt-2">
+                                    @foreach ($projects as $project)
+                                        <li class="mb-2">
+                                            <p>{{ $project->name }} - {{ $project->tasks_count }} tasks completed out of {{ $project->tasks->count() }} tasks</p>
+                                            <div class="w-full bg-gray-200 rounded-full">
+                                                <div class="bg-blue-500 text-xs leading-none py-1 text-center text-white rounded-full" style="width: {{ $project->tasks->count() > 0 ? ($project->tasks_count / $project->tasks->count() * 100) : 0 }}%"></div>
+                                            </div>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
                         @endif
 
-                        <!-- Recent Activity Card -->
-                        <div class="bg-white p-4 shadow-sm rounded-lg">
-                            <h3 class="text-lg font-semibold">Recent Activity</h3>
-                            <ul class="mt-2">
-                                @foreach ($recentActivity as $activity)
-                                    <li class="mb-2">
-                                        <p>{{ $activity->description }} <span class="text-sm text-gray-500">({{ $activity->created_at->diffForHumans() }})</span></p>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
-
-                        <!-- Completed Tasks Statistics Card -->
-                        <div class="bg-white p-4 shadow-sm rounded-lg">
-                            <h3 class="text-lg font-semibold">Completed Tasks</h3>
-                            <p class="mt-2 text-2xl">{{ $completedTasksCount }}</p>
-                            <a href="{{ route('tasks.index') }}" class="text-blue-500 text-sm mt-2 block">View all completed tasks</a>
-                        </div>
-
-                        <!-- Latest Incomplete Tasks Card -->
+                        <!-- Latest User's Incomplete Tasks Card -->
                         <div class="bg-white p-4 shadow-sm rounded-lg">
                             <h3 class="text-lg font-semibold">Latest Incomplete Tasks</h3>
                             <ul class="mt-2">
@@ -83,21 +98,6 @@
                                 @endforeach
                             </ul>
                             <a href="{{ route('tasks.index') }}" class="text-blue-500 text-sm mt-2 block">View all tasks</a>
-                        </div>
-
-                        <!-- Project Progress Card -->
-                        <div class="bg-white p-4 shadow-sm rounded-lg">
-                            <h3 class="text-lg font-semibold">Project Progress</h3>
-                            <ul class="mt-2">
-                                @foreach ($projects as $project)
-                                    <li class="mb-2">
-                                        <p>{{ $project->name }} - {{ $project->tasks_count }} tasks completed out of {{ $project->tasks->count() }} tasks</p>
-                                        <div class="w-full bg-gray-200 rounded-full">
-                                            <div class="bg-blue-500 text-xs leading-none py-1 text-center text-white rounded-full" style="width: {{ $project->tasks->count() > 0 ? ($project->tasks_count / $project->tasks->count() * 100) : 0 }}%"></div>
-                                        </div>
-                                    </li>
-                                @endforeach
-                            </ul>
                         </div>
                     </div>
                 </div>

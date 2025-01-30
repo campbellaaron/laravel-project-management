@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return redirect()->route('tasks.index');
+    return redirect()->route('dashboard');
 });
 
 Route::get('/dashboard', [DashboardController::class, 'dashboard'])
@@ -31,6 +31,8 @@ Route::group(['middleware'=> 'role:admin|super-admin|manager'], function () {
     // Block 'user' role from creating or editing projects
     Route::get('projects/create', [ProjectsController::class, 'create'])->middleware('role:admin|super-admin|manager')->name('projects.create');
     Route::get('projects/{project}/edit', [ProjectsController::class, 'edit'])->middleware('role:admin|super-admin|manager')->name('projects.edit');
+    Route::patch('/projects/{project}/status', [ProjectsController::class, 'updateStatus'])->middleware('role:admin|super-admin|manager')->name('projects.updateStatus');
+
 });
 
 Route::middleware('auth')->group(function () {

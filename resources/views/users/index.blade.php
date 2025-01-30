@@ -5,7 +5,7 @@
     <ul>
         @foreach ($users as $user)
             <li value="{{ $user->id }}">
-                <a href="{{route('users.show', $user)}}" class="text-md text-slate-400">{{ $user->name }}</a>
+                <a href="{{route('users.show', $user)}}" class="text-md text-slate-400">{{ $user->full_name }}</a>
             </li>
         @endforeach
     </ul>

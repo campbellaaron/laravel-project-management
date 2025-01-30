@@ -51,9 +51,16 @@ class RolesAndPermissionsSeeder extends Seeder
         $userRole->givePermissionTo(['create tasks', 'edit tasks']); // Basic user permissions for tasks
 
         // Optionally, you can assign a super-admin role to a user (example)
-        $superAdminFactoryUser = [1, "Super Admin", "admin@lickbeansinteractive.com", 'Password1!'];
-        User::create($superAdminFactoryUser);
-        $superAdmin = User::find(1); // Assuming user ID 1 is the super admin
-        $superAdmin->assignRole('super-admin');
+        // Create the super-admin user
+        $superAdminFactoryUser = [
+            'first_name' => 'Super',
+            'last_name' => 'Admin',
+            'email' => 'admin@lickbeansinteractive.com',
+            'password' => bcrypt('superadminpassword'),
+            'email_verified_at' => now(),
+        ];
+
+        $user = User::create($superAdminFactoryUser);
+        $user->assignRole('super-admin');
     }
 }

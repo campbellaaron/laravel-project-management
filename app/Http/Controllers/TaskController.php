@@ -77,10 +77,12 @@ class TaskController extends Controller
         // Continue with other activity logs (task assignment, etc.)
         // Similar to above, log other activity actions:
         $user = User::find($request->assigned_to);
+
         Activity::create([
             'user_id' => auth()->id(),
             'description' => 'Assigned task: ' . $task->title . ' to ' . $user->name,
         ]);
+
         \Log::info('Activity logged for task assignment: ' . $task->title . ' to ' . $user->name);
 
         // Send a notification to the assigned user
@@ -96,7 +98,6 @@ class TaskController extends Controller
         return redirect()->route('tasks.create')->with('error', 'There was an error creating the task.');
     }
 }
-
 
     // Display the specified task
     public function show(Task $task)
