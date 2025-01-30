@@ -22,6 +22,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'edit users',
             'delete users',
             'assign roles',
+            'create roles',
+            'edit roles',
+            'delete roles',
             'create projects',
             'edit projects',
             'delete projects',
@@ -38,14 +41,18 @@ class RolesAndPermissionsSeeder extends Seeder
         // Create Roles
         $superAdminRole = Role::create(['name' => 'super-admin']);
         $adminRole = Role::create(['name' => 'admin']);
+        $managerRole = Role::create(['name'=> 'manager']);
         $userRole = Role::create(['name' => 'user']);
 
         // Assign Permissions to Roles
         $superAdminRole->givePermissionTo(Permission::all());  // Super admin gets all permissions
-        $adminRole->givePermissionTo(['create users', 'edit users', 'create projects', 'edit projects', 'create tasks', 'edit tasks']); // Admin has more permissions but not delete or assign roles
+        $adminRole->givePermissionTo(['create users', 'edit users', 'create projects', 'edit projects', 'create tasks', 'edit tasks', 'create roles']); // Admin has more permissions but not delete or assign roles
+        $managerRole->givePermissionTo(['create projects', 'edit projects', 'create tasks', 'edit tasks']);
         $userRole->givePermissionTo(['create tasks', 'edit tasks']); // Basic user permissions for tasks
 
         // Optionally, you can assign a super-admin role to a user (example)
+        $superAdminFactoryUser = [1, "Super Admin", "admin@lickbeansinteractive.com", 'Password1!'];
+        User::create($superAdminFactoryUser);
         $superAdmin = User::find(1); // Assuming user ID 1 is the super admin
         $superAdmin->assignRole('super-admin');
     }

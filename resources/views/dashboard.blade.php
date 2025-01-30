@@ -6,6 +6,23 @@
         <div class="p-1 text-gray-900 dark:text-gray-100 text-sm">
             {{ __("You're logged in!") }}
         </div>
+        <p>
+            @if(auth()->user()->hasAnyRole(['super-admin', 'admin', 'manager']))
+                <!-- Show admin content -->
+                <p>You are an admin!</p>
+            @elseif(auth()->user()->hasRole('user'))
+                <!-- Show regular user content -->
+                <p>You are a user!</p>
+            @endif
+        </p>
+        <div>
+            <p>
+                @if(auth()->user()->hasAnyRole(['admin', 'super-admin']))
+                    <!-- Show content for users who are admins or managers -->
+                    <p>You have special permissions!</p>
+                @endif
+            </p>
+        </div>
     </x-slot>
     @section('content')
         <div class="container">
@@ -90,7 +107,7 @@
                                     <li class="mb-2">
                                         <p>{{ $project->name }} - {{ $project->tasks_count }} tasks completed out of {{ $project->tasks->count() }} tasks</p>
                                         <div class="w-full bg-gray-200 rounded-full">
-                                            <div class="bg-blue-500 text-xs leading-none py-1 text-center text-white rounded-full" style="width: {{ $project->tasks_count / $project->tasks->count() * 100 }}%"></div>
+                                            <div class="bg-blue-500 text-xs leading-none py-1 text-center text-white rounded-full" style="width: {{ $project->tasks->count() > 0 ? ($project->tasks_count / $project->tasks->count() * 100) : 0 }}%"></div>
                                         </div>
                                     </li>
                                 @endforeach

@@ -29,6 +29,7 @@
         <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md">
             {{ $task->completed ? 'Undo Complete' : 'Complete Task' }}
         </button>
+        <a href="{{ route('tasks.edit', $task->id) }}" class="bg-white dark:bg-slate-600 p-6 text-gray-900 dark:text-gray-100">Edit This Task</a>
     </form>
 
 

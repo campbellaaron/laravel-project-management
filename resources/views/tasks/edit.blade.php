@@ -38,6 +38,16 @@
             </select>
         </div>
 
+        <!-- Project -->
+        <div>
+            <label for="project_id">Project</label>
+            <select name="project_id" id="project_id" required>
+                @foreach ($projects as $project)
+                    <option value="{{ $project->id }}" {{ $project->id == old('project_id', $task->project_id) ? 'selected' : '' }}>{{ $project->name }}</option>
+                @endforeach
+            </select>
+        </div>
+
         <!-- Due Date -->
         <div>
             <label for="due_date">Due Date</label>

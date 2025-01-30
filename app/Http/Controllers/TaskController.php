@@ -102,10 +102,10 @@ class TaskController extends Controller
     public function show(Task $task)
     {
         // Check if the user is authenticated
-        if (auth()->check()) {
-            // Mark unread notifications as read
-            auth()->user()->unreadNotifications->markAsRead();
-        }
+        // if (auth()->check()) {
+        //     // Mark unread notifications as read
+        //     auth()->user()->unreadNotifications->markAsRead();
+        // }
 
         return view('tasks.show', compact('task'));
     }
@@ -114,7 +114,9 @@ class TaskController extends Controller
     public function edit(Task $task)
     {
         $users = User::all(); // Get all users to reassign the task
-        return view('tasks.edit', compact('task', 'users'));
+        $projects = Project::all();
+
+        return view('tasks.edit', compact('task', 'users', 'projects'));
     }
 
     // Update the specified task in the database
@@ -125,6 +127,7 @@ class TaskController extends Controller
             'description' => 'required|string',
             'assigned_to' => 'required|exists:users,id',
             'due_date' => 'nullable|date',
+            'project_id' => 'required|exists:projects,id',
         ]);
 
         $task->update([
@@ -132,6 +135,7 @@ class TaskController extends Controller
             'description' => $request->description,
             'assigned_to' => $request->assigned_to,
             'due_date' => $request->due_date,
+            'project_id' => $request->project_id,
         ]);
 
         return redirect()->route('tasks.show', $task->id)->with('success', 'Task updated successfully!');
