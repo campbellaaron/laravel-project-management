@@ -48,6 +48,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function projects()
+    {
+        return $this->belongsToMany(Project::class, 'project_user')->withPivot('role')->withTimestamps();
+    }
+
     public function tasks()
     {
         return $this->hasMany(Task::class, 'assigned_to');
@@ -56,5 +61,25 @@ class User extends Authenticatable
     public function getFullNameAttribute()
     {
         return $this->first_name .' '. $this->last_name;
+    }
+
+    public function teams()
+    {
+        return $this->belongsToMany(Team::class);
+    }
+
+    public function projectsLed()
+    {
+        return $this->hasMany(Project::class, 'project_lead_id');
+    }
+
+    public function contributedProjects()
+    {
+        return $this->projects()->wherePivot('role', 'contributor');
+    }
+
+    public function watchedProjects()
+    {
+        return $this->projects()->wherePivot('role', 'watcher');
     }
 }

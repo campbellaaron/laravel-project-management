@@ -17,16 +17,6 @@
                     </x-responsive-nav-link>
                 </li>
                 <li>
-                    <x-responsive-nav-link :href="route('users.index')"  :active="request()->routeIs('users')"  class="text-gray-200 hover:text-white inline-flex">
-                        <x-solar-users-group-two-rounded-linear class="w-5 h-5 mr-2"/> {{ __('Users') }}
-                    </x-responsive-nav-link>
-                </li>
-                <li>
-                    <x-responsive-nav-link :href="route('dashboard')"  :active="request()->routeIs('teams')"  class="text-gray-200 hover:text-white inline-flex">
-                        <x-fluentui-contact-card-group-28-o class="w-5 h-5 mr-2"/> {{ __('Teams') }}
-                    </x-responsive-nav-link>
-                </li>
-                <li>
                     <x-responsive-nav-link :href="route('projects.index')"  :active="request()->routeIs('projects')"  class="text-gray-200 hover:text-white inline-flex">
                         <x-ri-folder-chart-line class="w-5 h-5 mr-2"/> {{ __('Projects') }}
                     </x-responsive-nav-link>
@@ -41,11 +31,29 @@
                         <x-solar-calendar-line-duotone class="w-5 h-5 mr-2"/> {{ __('Calendar') }}
                     </x-responsive-nav-link>
                 </li>
+                @if (auth()->user()->hasAnyRole(['super-admin', 'admin', 'manager']))
+                <!-- Only show these to non-users -->
+                <li>
+                    <x-responsive-nav-link :href="route('users.index')"  :active="request()->routeIs('users')"  class="text-gray-200 hover:text-white inline-flex">
+                        <x-solar-users-group-two-rounded-linear class="w-5 h-5 mr-2"/> {{ __('Users') }}
+                    </x-responsive-nav-link>
+                </li>
+                @endif
+                @if (auth()->user()->hasAnyRole(['super-admin', 'admin']))
+
+                <!-- Only show these to admins -->
+                <li>
+                    <x-responsive-nav-link :href="route('teams.index')"  :active="request()->routeIs('teams')"  class="text-gray-200 hover:text-white inline-flex">
+                        <x-fluentui-contact-card-group-28-o class="w-5 h-5 mr-2"/> {{ __('Teams') }}
+                    </x-responsive-nav-link>
+                </li>
                 <li>
                     <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('Reports')"  class="text-gray-200 hover:text-white inline-flex">
                         <x-solar-chart-linear class="w-5 h-5 mr-2"/> {{ __('Reports') }}
                     </x-responsive-nav-link>
                 </li>
+
+                @endif
                 <li>
                     <x-responsive-nav-link :href="route('profile.edit')" :active="request()->routeIs('profile')"  class="text-gray-200 hover:text-white inline-flex">
                         <x-carbon-user-profile class="w-5 h-5 mr-2"/> {{ __('Profile') }}

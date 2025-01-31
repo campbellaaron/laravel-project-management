@@ -11,7 +11,7 @@
     @section('content')
         <div class="container">
             <h3 class="text-lg font-semibold">Project: {{ $project->name }}</h3>
-            <p>Status: <span id="project-status">{{ $project->status }}</span></p>
+            <p>Status: <span id="project-status">{{ $project->formatted_status }}</span></p>
 
             <!-- Status Dropdown for changing the project status -->
             <select id="status-select" class="mt-2 p-2 border rounded">
@@ -34,6 +34,28 @@
             <button type="submit">Delete Project</button>
         </form>
 
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">Project Team</h3>
+            <table class="w-full mt-4 border-collapse border border-gray-300 dark:border-gray-600">
+                <thead>
+                    <tr class="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                        <th class="border p-2">Name</th>
+                        <th class="border p-2">Role</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($project->users as $user)
+                        <tr class="border text-gray-800 dark:text-gray-300">
+                            <td class="p-2">{{ $user->full_name }}</td>
+                            <td class="p-2">{{ ucfirst($user->pivot->role) }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+
+
+
         <!-- Project Description -->
         <div class="">{{ $project->description }}</div>
 
@@ -42,7 +64,7 @@
         <ul class="mt-2">
             @foreach ($tasks as $task)
                 <li class="flex justify-between mb-2">
-                    <span>{{ $task->title }}</span>
+                    <a href="{{route('tasks.show', $task->id)}}" class="text-md text-bold text-slate-900 dark:text-slate-300"><span>{{ $task->title }}</span></a>
                     <span class="text-sm text-gray-500">{{ $task->due_date ? $task->due_date->format('M d, Y') : 'No Due Date' }}</span>
                 </li>
             @endforeach
@@ -67,6 +89,7 @@
                 })
                 .then(response => response.json())
                 .then(data => {
+
                     // Update the UI with the new status
                     document.getElementById('project-status').textContent = data.status;
                     document.getElementById('status-message').textContent = data.message;

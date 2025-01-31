@@ -60,7 +60,8 @@ class ProjectsController extends Controller
     // Show the form for editing the specified project
     public function edit(Project $project)
     {
-        return view('projects.edit', compact('project'));
+        $users = User::all(); // Fetch all users
+        return view('projects.edit', compact('project', 'users'));
     }
 
     // Update the specified project in the database
@@ -70,40 +71,95 @@ class ProjectsController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'status' => 'required|in:open,in-progress,completed',
+            'project_lead_id' => 'nullable|exists:users,id',
         ]);
 
         $project->update([
             'name' => $request->name,
             'description' => $request->description,
             'status' => $request->status,
+            'project_lead_id' => $request->project_lead_id,
         ]);
 
-        // When a project is updated
-        Activity::create([
-            'user_id' => auth()->id(),
-            'description' => auth()->user()->first_name . ' updated project: ' . $project->name,
-        ]);
+        if ($project->status == 'completed') {
+            Activity::create([
+                'user_id' => auth()->id(),
+                'description' => auth()->user()->first_name . ' completed project: ' . $project->name,
+            ]);
+        } else {
+            // When a project is updated
+            Activity::create([
+                'user_id' => auth()->id(),
+                'description' => auth()->user()->first_name . ' updated project: ' . $project->name,
+            ]);
+        }
 
         return redirect()->route('projects.index')->with('success', 'Project updated successfully!');
     }
 
     public function updateStatus(Request $request, Project $project)
     {
+        try {
+            $request->validate([
+                'status' => 'required|in:open,in-progress,completed',
+            ]);
+
+            // Check if the status has changed and update it
+            $project->update(['status' => $request->status]);
+
+            // Create an activity log for the status change
+            if ($project->status == 'completed') {
+                // When a project is completed
+                Activity::create([
+                    'user_id' => auth()->id(),
+                    'description' => auth()->user()->first_name . ' marked project ' . $project->name . ' complete.',
+                ]);
+            } else {
+                // When a project is updated
+                Activity::create([
+                    'user_id' => auth()->id(),
+                    'description' => auth()->user()->first_name . ' changed ' . $project->name . ' status to "<strong>' . $project->formatted_status . '</strong>"',
+                ]);
+            }
+
+            // Return success response
+            return response()->json([
+                'status' => $project->formatted_status,
+                'message' => 'Project status updated successfully',
+            ]);
+        } catch (\Exception $e) {
+            // Log the error for debugging purposes
+            \Log::error("Error updating project status: " . $e->getMessage());
+
+            return response()->json([
+                'message' => 'An error occurred while updating the project status.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function assignUsers(Request $request, Project $project)
+    {
         $request->validate([
-            'status'=> ['required|in:open,in-progress,completed'],
+            'users' => 'required|array',
+            'users.*.id' => 'exists:users,id',
+            'users.*.role' => 'in:watcher,contributor'
         ]);
 
-        $project->update(['status' => $request->status]);
+        // Sync users with roles
+        $syncData = [];
+        foreach ($request->users as $user) {
+            $syncData[$user['id']] = ['role' => $user['role']];
+        }
+
+        $project->users()->sync($syncData);
 
         Activity::create([
             'user_id' => auth()->id(),
-            'description'=> auth()->user()->first_name . ' changed the status of '. $project->name . ' to ' . $project->status,
+            'description' => auth()->user()->first_name . ' updated project assignments for ' . $project->name,
         ]);
 
-        return response()->json([
-            'status' => $project->status,
-            'message' => 'Project status updated successfully',
-        ]);
+        return redirect()->back()->with('success', 'Users assigned successfully.');
     }
 
     // Remove the specified project from the database
@@ -114,7 +170,7 @@ class ProjectsController extends Controller
         // When a project is deleted
         Activity::create([
             'user_id' => auth()->id(),
-            'description' => 'Deleted project: ' . $project->name,
+            'description' => auth()->user()->first_name . ' deleted project: ' . $project->name,
         ]);
         return redirect()->route('projects.index')->with('success', 'Project deleted successfully!');
     }

@@ -8,6 +8,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Models\Comment;
 use App\Notifications\TaskAssigned;
+use App\Notifications\TaskReassigned;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -69,7 +70,7 @@ class TaskController extends Controller
         // Log the activity for task creation
         Activity::create([
             'user_id' => auth()->id(),
-            'description' => 'Created a new task: ' . $task->title,
+            'description' => auth()->user()->first_name . ' created a new task: ' . $task->title,
         ]);
 
         \Log::info('Activity logged for task creation: ' . $task->title);  // Log activity creation
@@ -80,7 +81,7 @@ class TaskController extends Controller
 
         Activity::create([
             'user_id' => auth()->id(),
-            'description' => 'Assigned task: ' . $task->title . ' to ' . $user->name,
+            'description' => auth()->user()->first_name . ' assigned task: ' . $task->title . ' to ' . $user->full_name,
         ]);
 
         \Log::info('Activity logged for task assignment: ' . $task->title . ' to ' . $user->name);
@@ -99,7 +100,7 @@ class TaskController extends Controller
     }
 }
 
-    // Display the specified task
+// Display the specified task
     public function show(Task $task)
     {
         // Check if the user is authenticated
@@ -131,6 +132,9 @@ class TaskController extends Controller
             'project_id' => 'required|exists:projects,id',
         ]);
 
+        // Store the old assignee before updating
+        $oldAssigneeId = $task->assigned_to;
+
         $task->update([
             'title' => $request->title,
             'description' => $request->description,
@@ -139,6 +143,31 @@ class TaskController extends Controller
             'project_id' => $request->project_id,
         ]);
 
+        // Log the activity for task creation
+        Activity::create([
+            'user_id' => auth()->id(),
+            'description' => auth()->user()->first_name . ' updated the task: ' . $task->title,
+        ]);
+
+        // Check if the task was reassigned
+        if ($oldAssigneeId != $request->assigned_to) {
+            $newAssignee = User::find($request->assigned_to);
+            $oldAssignee = User::find($oldAssigneeId);
+
+            // Notify the new assignee
+            $newAssignee->notify(new TaskAssigned($task));
+
+            // Optionally notify the old assignee
+            if ($oldAssignee) {
+                $oldAssignee->notify(new TaskReassigned($task));
+            }
+
+            Activity::create([
+                'user_id' => auth()->id(),
+                'description' => auth()->user()->first_name . ' reassigned task: ' . $task->title . ' to ' . $newAssignee->full_name,
+            ]);
+        }
+
         return redirect()->route('tasks.show', $task->id)->with('success', 'Task updated successfully!');
     }
 
@@ -146,6 +175,12 @@ class TaskController extends Controller
     {
         $task->completed = !$task->completed;
         $task->save();
+
+        // Log the activity for task creation
+        Activity::create([
+            'user_id' => auth()->id(),
+            'description' => auth()->user()->first_name . ' marked the task ' . $task->title . ' as complete',
+        ]);
 
          // Redirect back to the task page
         return redirect()->route('tasks.show', $task->id)->with('success', 'Task status updated successfully.');
@@ -163,6 +198,12 @@ class TaskController extends Controller
             'user_id' => auth()->id(),
         ]);
 
+        // Log the activity for task creation
+        Activity::create([
+            'user_id' => auth()->id(),
+            'description' => auth()->user()->first_name . ' commented on ' . $task->title,
+        ]);
+
         return redirect()->route('tasks.show', $task);
     }
 
@@ -170,6 +211,12 @@ class TaskController extends Controller
     public function destroy(Task $task)
     {
         $task->delete();
+
+        // Log the activity for task creation
+        Activity::create([
+            'user_id' => auth()->id(),
+            'description' => auth()->user()->first_name . ' deleted task: ' . $task->title,
+        ]);
         return redirect()->route('tasks.index');
     }
 }

@@ -7,13 +7,28 @@ use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
 {
-    public function markAsRead()
+    public function markAsRead(Request $request, $notificationId = null)
     {
-        // Mark all unread notifications as read for the authenticated user
-        Auth::user()->unreadNotifications->markAsRead();
+        $user = auth()->user();
 
-        // Redirect back to the dashboard or any other page
-        return redirect()->route('dashboard');
+        if ($notificationId) {
+            // Find and mark a single notification as read
+            $notification = $user->notifications()->findOrFail($notificationId);
+            $notification->markAsRead();
+        } else {
+            // Mark all notifications as read
+            $user->unreadNotifications->markAsRead();
+        }
+
+        // If using AJAX, return JSON response
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => $notificationId ? 'Notification marked as read.' : 'All notifications marked as read.',
+            ]);
+        }
+
+        return redirect($request->input('redirect_to', route('dashboard')));
     }
 
     public function markSpecificNotificationAsRead($notificationId)

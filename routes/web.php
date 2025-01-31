@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\RoleController;
@@ -25,15 +26,16 @@ Route::middleware('can:create-roles')->group(function () {
 
 Route::middleware(['auth', 'role:admin|super-admin'])->group(function () {
     Route::resource('users', UserController::class); // Only admins and super-admins can access users
+    Route::resource('teams', TeamController::class);
+
 });
 
 Route::group(['middleware'=> 'role:admin|super-admin|manager'], function () {
     // Block 'user' role from creating or editing projects
     Route::get('projects/create', [ProjectsController::class, 'create'])->middleware('role:admin|super-admin|manager')->name('projects.create');
     Route::get('projects/{project}/edit', [ProjectsController::class, 'edit'])->middleware('role:admin|super-admin|manager')->name('projects.edit');
-    Route::patch('/projects/{project}/status', [ProjectsController::class, 'updateStatus'])->middleware('role:admin|super-admin|manager')->name('projects.updateStatus');
-
 });
+
 
 Route::middleware('auth')->group(function () {
     // Allow all users to view a project
@@ -46,6 +48,11 @@ Route::middleware('auth')->group(function () {
 
     // Allow 'user' to view projects
     Route::get('projects', [ProjectsController::class, 'index'])->name('projects.index');
+    Route::patch('/projects/{project}/status', [ProjectsController::class, 'updateStatus'])->middleware('role:admin|super-admin|manager')->name('projects.updateStatus');
+    Route::patch('/projects/{project}/assign-users', [ProjectsController::class, 'assignUsers'])
+    ->middleware(['auth', 'role:admin|super-admin|manager'])
+    ->name('projects.assignUsers');
+
 
     // Task resource route will automatically generate the 'create', 'store', 'edit', 'update', etc.
     Route::resource('tasks', TaskController::class);
@@ -53,10 +60,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/tasks/{task}/complete', [TaskController::class, 'complete'])->name('tasks.complete');
     Route::post('/tasks/{task}/comments', [TaskController::class, 'storeComment'])->name('tasks.storeComment');
 
-
-
     // Notifications routes
-    Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+    Route::post('/notifications/mark-as-read/{id?}', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
 
     // Profile and user routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
