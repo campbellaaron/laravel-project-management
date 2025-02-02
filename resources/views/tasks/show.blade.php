@@ -15,7 +15,7 @@
 
     <div class="task-assigned-to">
         <h3>Assigned To:</h3>
-        <p>{{ $task->assignedTo->name }}</p>
+        <p>{{ $task->assignedTo->full_name }}</p>
     </div>
 
     <div class="task-due-date">

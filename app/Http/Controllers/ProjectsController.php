@@ -21,7 +21,8 @@ class ProjectsController extends Controller
     // Show the form for creating a new project
     public function create()
     {
-        return view('projects.create');
+        $users = User::all();
+        return view('projects.create', compact('users'));
     }
 
     // Store a newly created project in the database
@@ -31,13 +32,23 @@ class ProjectsController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'status' => 'required|in:open,in-progress,completed',
+            'start_date' => 'nullable|date',
+            'due_date' => 'nullable|date|after_or_equal:start_date',
+            'team' => 'nullable|array',
+            'team.*' => 'exists:users,id',
         ]);
 
         $project = Project::create([
             'name' => $request->name,
             'description' => $request->description,
             'status' => $request->status,
+            'start_date' => $request->start_date,
+            'due_date' => $request->due_date,
         ]);
+
+        if ($request->has('team')) {
+            $project->users()->attach($request->team);
+        }
 
         // When a project is created
         Activity::create([

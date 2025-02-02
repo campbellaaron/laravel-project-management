@@ -98,7 +98,7 @@ class UserController extends Controller
             'role' => 'required|exists:roles,name',
         ]);
 
-        $user->update($request->only(['name', 'email']));
+        $user->update($request->only(['first_name', 'last_name', 'email']));
 
         $user->syncRoles($request->role);  // Update user role
 

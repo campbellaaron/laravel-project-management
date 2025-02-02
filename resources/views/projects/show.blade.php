@@ -10,44 +10,105 @@
 
     @section('content')
         <div class="container">
-            <h3 class="text-lg font-semibold">Project: {{ $project->name }}</h3>
-            <p>Status: <span id="project-status">{{ $project->formatted_status }}</span></p>
+            <div class="flex justify-between items-center px-6 py-3">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-500">Project: {{ $project->name }}</h2>
+                    <p class="text-gray-900 dark:text-gray-500">Status: <span id="project-status">{{ $project->formatted_status }}</span></p>
+                </div>
+                <div class="flex items-start px-3 py-4">
+                    <!-- Project Delete Button for Super Admins -->
+                    @if (auth()->user()->hasRole('super-admin'))
+                        <form action="{{ route('projects.destroy', $project) }}" method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900 ms-2 flex justify-evenly items-center"><x-fluentui-delete-48-o class="w-6 h-6" />Delete Project</button>
+                        </form>
+                    @endif
 
-            <!-- Status Dropdown for changing the project status -->
-            <select id="status-select" class="mt-2 p-2 border rounded">
-                <option value="open" {{ $project->status == 'open' ? 'selected' : '' }}>Open</option>
-                <option value="in-progress" {{ $project->status == 'in-progress' ? 'selected' : '' }}>In Progress</option>
-                <option value="completed" {{ $project->status == 'completed' ? 'selected' : '' }}>Completed</option>
-            </select>
+                    <!-- Project Edit Button for Admins -->
+                    @if (auth()->user()->hasAnyRole(['admin','super-admin']))
+                        <a href="{{route('projects.edit', $project->id)}}" class="bg-white dark:bg-slate-600 p-6 text-gray-900 dark:text-gray-100 flex items-center rounded-md py-2 px-4 border border-transparent text-center "><x-fluentui-edit-48-o class="h-6 w-6 mr-1.5" /> Edit Project</a>
+                    @endif
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div class="relative flex flex-col my-6 bg-white shadow-sm border border-slate-200 rounded-lg w-96">
+                    <div class="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1">
+                        <span class="text-sm text-slate-600 font-medium">
+                            Project Summary
+                        </span>
+                        <!-- Status Dropdown for changing the project status -->
+                        @if(auth()->user()->hasAnyRole(['admin|super-admin|manager']))
+                        <select id="status-select" class="mt-2 p-2 border rounded">
+                            <option value="open" {{ $project->status == 'open' ? 'selected' : '' }}>Open</option>
+                            <option value="in-progress" {{ $project->status == 'in-progress' ? 'selected' : '' }}>In Progress</option>
+                            <option value="completed" {{ $project->status == 'completed' ? 'selected' : '' }}>Completed</option>
+                        </select>
+                        @endif
+                    </div>
 
-            <!-- Create Task for this Project button -->
-            <a href="{{ route('tasks.create') }}">Create a new Task</a>
+                    <div class="p-4">
+                        <h5 class="mb-2 text-slate-800 text-xl font-semibold">
+                                {{ $project->name }}
+                        </h5>
+                        <!-- Project Description -->
+                        <div class="text-slate-600 leading-normal font-light">{{ $project->description }}</div>
+                    </div>
+                    <div class="mx-3 border-t border-slate-200 pb-3 pt-2 px-1">
+                        <span class="text-sm text-slate-600 font-medium">
+                            <strong>Project Lead:</strong> {{ $project->projectLead ? $project->projectLead->full_name : 'Not Assigned' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">Project Team</h3>
+                    <table class="w-full mt-4 border-collapse border border-gray-300 dark:border-gray-600">
+                        <thead>
+                            <tr class="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+                                <th class="border p-2">Name</th>
+                                <th class="border p-2">Role</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($project->users as $user)
+                                <tr class="border text-gray-800 dark:text-gray-300">
+                                    <td class="p-2">{{ $user->full_name }}</td>
+                                    <td class="p-2">{{ ucfirst($user->pivot->role) }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
             <!-- Display success message -->
             <p id="status-message" class="mt-2 text-green-500" style="display:none;"></p>
         </div>
 
-        <!-- Project Delete Button for Admins -->
-        <form action="{{ route('projects.destroy', $project) }}" method="POST">
-            @csrf
-            @method('DELETE')
-            <button type="submit">Delete Project</button>
-        </form>
-
         <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
-            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">Project Team</h3>
+            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">Project Tasks</h3>
+            <!-- Create Task for this Project button -->
+            <a href="{{ route('tasks.create') }}" class="flex items-center rounded-md bg-amber-600 py-2 px-4 border border-transparent text-center text-sm text-slate-800 transition-all shadow-md hover:shadow-lg focus:bg-amber-700 focus:shadow-none active:bg-amber-700 hover:bg-amber-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none ml-2"><x-fluentui-task-list-square-add-24-o class="h-6 w-6 mr-4" />Create a new Task</a>
             <table class="w-full mt-4 border-collapse border border-gray-300 dark:border-gray-600">
                 <thead>
                     <tr class="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100">
-                        <th class="border p-2">Name</th>
-                        <th class="border p-2">Role</th>
+                        <th class="border p-2">Task ID</th>
+                        <th class="border p-2">Task Name</th>
+                        <th class="border p-2">Status</th>
+                        <th class="border p-2">Assignee</th>
+                        <th class="border p-2">Priority</th>
+                        <th class="border p-2">Due Date</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($project->users as $user)
+                    @foreach ($tasks as $task)
                         <tr class="border text-gray-800 dark:text-gray-300">
-                            <td class="p-2">{{ $user->full_name }}</td>
-                            <td class="p-2">{{ ucfirst($user->pivot->role) }}</td>
+                            <td class="p-4">WEB-002</td>
+                            <td class="p-4"><a href="{{route('tasks.show', $task->id)}}" class="text-md text-bold text-slate-900 dark:text-slate-300"><span>{{ $task->title }}</span></a></td>
+                            <td class="p-4">In Progress</td>
+                            <td class="p-4">{{ $task->assignedTo->full_name }}</td>
+                            <td class="p-4">Low</td>
+                            <td class="p-4">{{ $task->due_date }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -55,9 +116,6 @@
         </div>
 
 
-
-        <!-- Project Description -->
-        <div class="">{{ $project->description }}</div>
 
         <!-- Display Tasks Related to the Project -->
         <h3 class="mt-4 text-lg font-semibold">Project Tasks</h3>

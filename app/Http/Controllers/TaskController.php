@@ -52,18 +52,13 @@ class TaskController extends Controller
         'description' => 'required|string',
         'assigned_to' => 'required|exists:users,id',
         'due_date' => 'nullable|date',
+        'priority' => 'required|in:low,medium,high',
         'project_id' => 'required|exists:projects,id',
     ]);
 
     // Create the task
     try {
-        $task = Task::create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'assigned_to' => $request->assigned_to,
-            'due_date' => $request->due_date,
-            'project_id' => $request->project_id,
-        ]);
+        $task = Task::create($request->all());
 
         \Log::info('Task created: ' . $task->title);  // Log after task is created successfully
 
@@ -103,12 +98,6 @@ class TaskController extends Controller
 // Display the specified task
     public function show(Task $task)
     {
-        // Check if the user is authenticated
-        // if (auth()->check()) {
-        //     // Mark unread notifications as read
-        //     auth()->user()->unreadNotifications->markAsRead();
-        // }
-
         return view('tasks.show', compact('task'));
     }
 

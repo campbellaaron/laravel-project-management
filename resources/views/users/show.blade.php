@@ -14,7 +14,7 @@
             <button>Edit User</button>
         @endif
 
-        @if(auth()->user()->hasPermissionTo('delete-users'))
+        @if(auth()->user()->hasPermissionTo('delete users'))
             <button>Delete User</button>
         @endif
     </div>

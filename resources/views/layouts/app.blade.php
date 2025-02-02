@@ -30,7 +30,7 @@
                 <!-- Page Heading -->
                 @isset($header)
                     <header class="bg-white dark:bg-gray-800 shadow">
-                        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        <div class="max-w-8xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                             {{ $header }}
                         </div>
                     </header>
@@ -39,7 +39,7 @@
                 <h1 class="bg-white dark:bg-gray-800 shadow text-4xl p-5 mb-6 font-extrabold text-slate-900 dark:text-slate-200">@yield('title')</h1>
 
                 <!-- Page Content -->
-                <main class="md:w-[85vw] w-[50vw] md:mx-auto mx-2">
+                <main class="md:w-[85vw] w-[50vw] md:mx-auto mx-2 p-6 overflow-auto">
                     @if (@session()->has('success'))
                         <div>
                             <div role="alert" id="alert" class="mb-4 relative flex w-full p-3 text-sm text-white bg-green-600 rounded-md">
