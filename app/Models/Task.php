@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
+use App\Models\Project;
 
 class Task extends Model
 {
@@ -13,6 +15,15 @@ class Task extends Model
         'title', 'description', 'priority', 'assigned_to', 'due_date', 'project_id'
     ];
 
+    public static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($task) {
+            $task->task_key = self::generateTaskKey($task->project_id);
+        });
+    }
+
     public function assignedTo()
     {
         return $this->belongsTo(User::class, 'assigned_to');
@@ -21,6 +32,21 @@ class Task extends Model
     public function comments()
     {
         return $this->hasMany(Comment::class);
+    }
+
+    public static function generateTaskKey($projectId)
+    {
+        // Fetch the project
+        $project = Project::find($projectId);
+
+        // Generate the prefix from the project name (e.g., "Web Development" → "WEB")
+        $prefix = strtoupper(Str::slug($project->name, ''));
+        $prefix = substr($prefix, 0, 3); // First 3 letters (e.g., WEB)
+
+        // Count existing tasks for this project and increment
+        $taskCount = Task::where('project_id', $projectId)->count() + 1;
+
+        return "{$prefix}-" . str_pad($taskCount, 4, '0', STR_PAD_LEFT);
     }
 
     public function isOverdue()

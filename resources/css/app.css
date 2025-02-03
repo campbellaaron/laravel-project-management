@@ -35,3 +35,35 @@
     font-size: 0.75rem;
     font-weight: bold;
 }
+
+/* Projects Extra CSS */
+
+.hazardzone {
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Tasks Extra CSS */
+.low {
+    position: relative;
+    padding: 0.4rem 0.5rem;
+    background-color: #01719e;
+}
+
+.medium {
+    position: relative;
+    padding: 0.4rem 0.5rem;
+    background-color: #c9ab00;
+}
+
+.high {
+    position: relative;
+    padding: 0.4rem 0.5rem;
+    background-color: #c00e02;
+}
+
+.urgent {
+    position: relative;
+    padding: 0.4rem 0.5rem;
+    background-color: #4b00a0;
+}

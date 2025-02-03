@@ -52,7 +52,7 @@ class TaskController extends Controller
         'description' => 'required|string',
         'assigned_to' => 'required|exists:users,id',
         'due_date' => 'nullable|date',
-        'priority' => 'required|in:low,medium,high',
+        'priority' => 'required|in:low,medium,high,urgent',
         'project_id' => 'required|exists:projects,id',
     ]);
 
@@ -87,7 +87,7 @@ class TaskController extends Controller
         \Log::info('Notification sent to: ' . $user->name);
 
         // Redirect back to the task list or show a success message
-        return redirect()->route('tasks.show', $task->id)->with('success', 'Task created and user notified.');
+        return redirect()->route('tasks.show', $task->id)->with('success', 'Task created with ID: ' . $task->task_key . ', and assignee notified.');
 
     } catch (\Exception $e) {
         \Log::error("Error creating task or logging activity: " . $e->getMessage());  // Log error if something fails

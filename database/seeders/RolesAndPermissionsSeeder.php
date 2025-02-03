@@ -63,5 +63,14 @@ class RolesAndPermissionsSeeder extends Seeder
 
         $user = User::create($superAdminFactoryUser);
         $user->assignRole('super-admin');
+        $testUser = User::create([
+            'first_name' => 'Test',
+            'last_name' => 'User',
+            'email' => 'testemail@example.com',
+            'password' => bcrypt('normaluserpassword'),
+            'email_verified_at' => now(),
+            'name' => 'Test User', // Still figuring out if this is required or not 0_o
+        ]);
+        $testUser->assignRole('user');
     }
 }

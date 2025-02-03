@@ -8,9 +8,10 @@
 
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
 
-        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 border-collapse overflow-x-auto md:table-fixed">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 border-collapse overflow-x-auto">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
+                    <th scope="col" class="px-6 py-3">Task ID</th>
                     <th scope="col" class="px-6 py-3">Title</th>
                     <th scope="col" class="px-6 py-3">Description</th>
                     <th scope="col" class="px-6 py-3">Project</th>
@@ -22,20 +23,34 @@
             </thead>
             <tbody>
                 @foreach ($tasks as $task)
+                @php
+                    if ($task->priority === "urgent") {
+                        $priority_class = 'urgent';
+                    } else if ($task->priority === "high") {
+                        $priority_class = 'high';
+                    } else if ($task->priority === "medium") {
+                        $priority_class = 'medium';
+                    } else {
+                        $priority_class = 'low';
+                    }
+                @endphp
                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-300 dark:hover:bg-gray-800">
-                        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"><a href="{{ route('tasks.show', $task) }}">{{ $task->title }}</a></th>
+                        <th scope="row" class="px-6 py-4">{{ $task->task_key }}</th>
+                        <th class="px-6 py-4 font-bold text-base lg:text-lg text-gray-900 dark:text-white"><a href="{{ route('tasks.show', $task) }}">{{ $task->title }}</a></th>
                         <td class="px-6 py-4">{{ $task->description }}</td>
                         <td class="px-6 py-4">{{ $task->project->name }}</td>
                         <td class="px-6 py-4 bold">{{ $task->assignedTo->name }}</td>
-                        <td class="px-6 py-4">{{ $task->due_date }}</td>
-                        <td class="px-6 py-4">{{ $task->priority }}</td>
-                        <td class="px-4 py-4 flex items-center md:items-baseline justify-between flex-col md:flex-row ">
-                            <a href="{{ route('tasks.edit', $task) }}" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Edit</a>
-                            <form action="{{ route('tasks.destroy', $task) }}" method="POST" style="display:inline;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900 ms-2">Delete</button>
-                            </form>
+                        <td class="px-6 py-4">{{ $task->due_date ? $task->due_date->format('M d, Y') : 'No due date' }}</td>
+                        <td class="px-6 py-4 uppercase text-white"><span class="{{ $priority_class }} rounded-md font-bold">{{ $task->priority }}</span></td>
+                        <td class="px-4 py-4">
+                            <div class="flex items-center md:items-baseline justify-between flex-col md:flex-row">
+                                <a href="{{ route('tasks.edit', $task) }}" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Edit</a>
+                                <form action="{{ route('tasks.destroy', $task) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900 ms-2">Delete</button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 @endforeach

@@ -10,12 +10,27 @@
 
     @section('content')
         <div class="container">
-            <div class="flex justify-between items-center px-6 py-3">
+            <div class="flex justify-between flex-col lg:flex-row items-center px-6 py-3">
                 <div>
                     <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-500">Project: {{ $project->name }}</h2>
                     <p class="text-gray-900 dark:text-gray-500">Status: <span id="project-status">{{ $project->formatted_status }}</span></p>
                 </div>
-                <div class="flex items-start px-3 py-4">
+                <div class="flex flex-col md:flex-row md:items-start px-3 py-4 hazardzone">
+                    <span class="text-gray-900 dark:text-gray-500">Change Project Status: </span>
+                    <!-- Status Dropdown for changing the project status -->
+                    @if(auth()->user()->hasAnyRole(['admin|super-admin|manager']))
+                        <select id="status-select" class="p-2 border rounded">
+                            <option value="open" {{ $project->status == 'open' ? 'selected' : '' }}>Open</option>
+                            <option value="in-progress" {{ $project->status == 'in-progress' ? 'selected' : '' }}>In Progress</option>
+                            <option value="completed" {{ $project->status == 'completed' ? 'selected' : '' }}>Completed</option>
+                        </select>
+                    @endif
+
+                    <!-- Project Edit Button for Admins -->
+                    @if (auth()->user()->hasAnyRole(['admin','super-admin']))
+                    <a href="{{route('projects.edit', $project->id)}}" class="bg-white dark:bg-slate-600 p-6 text-gray-900 dark:text-gray-100 flex items-center rounded-md py-2 px-4 border border-transparent text-center "><x-fluentui-edit-48-o class="h-6 w-6 mr-1.5" /> Edit Project</a>
+                    @endif
+
                     <!-- Project Delete Button for Super Admins -->
                     @if (auth()->user()->hasRole('super-admin'))
                         <form action="{{ route('projects.destroy', $project) }}" method="POST">
@@ -24,27 +39,15 @@
                             <button type="submit" class="focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900 ms-2 flex justify-evenly items-center"><x-fluentui-delete-48-o class="w-6 h-6" />Delete Project</button>
                         </form>
                     @endif
-
-                    <!-- Project Edit Button for Admins -->
-                    @if (auth()->user()->hasAnyRole(['admin','super-admin']))
-                        <a href="{{route('projects.edit', $project->id)}}" class="bg-white dark:bg-slate-600 p-6 text-gray-900 dark:text-gray-100 flex items-center rounded-md py-2 px-4 border border-transparent text-center "><x-fluentui-edit-48-o class="h-6 w-6 mr-1.5" /> Edit Project</a>
-                    @endif
                 </div>
             </div>
-            <div class="grid grid-cols-2 gap-2">
-                <div class="relative flex flex-col my-6 bg-white shadow-sm border border-slate-200 rounded-lg w-96">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div class="relative flex flex-col my-6 bg-white shadow-sm border border-slate-200 rounded-lg">
                     <div class="mx-3 mb-0 border-b border-slate-200 pt-3 pb-2 px-1">
                         <span class="text-sm text-slate-600 font-medium">
                             Project Summary
                         </span>
-                        <!-- Status Dropdown for changing the project status -->
-                        @if(auth()->user()->hasAnyRole(['admin|super-admin|manager']))
-                        <select id="status-select" class="mt-2 p-2 border rounded">
-                            <option value="open" {{ $project->status == 'open' ? 'selected' : '' }}>Open</option>
-                            <option value="in-progress" {{ $project->status == 'in-progress' ? 'selected' : '' }}>In Progress</option>
-                            <option value="completed" {{ $project->status == 'completed' ? 'selected' : '' }}>Completed</option>
-                        </select>
-                        @endif
+
                     </div>
 
                     <div class="p-4">
@@ -85,7 +88,7 @@
             <p id="status-message" class="mt-2 text-green-500" style="display:none;"></p>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md my-6 md:my-2">
             <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">Project Tasks</h3>
             <!-- Create Task for this Project button -->
             <a href="{{ route('tasks.create') }}" class="flex items-center rounded-md bg-amber-600 py-2 px-4 border border-transparent text-center text-sm text-slate-800 transition-all shadow-md hover:shadow-lg focus:bg-amber-700 focus:shadow-none active:bg-amber-700 hover:bg-amber-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none ml-2"><x-fluentui-task-list-square-add-24-o class="h-6 w-6 mr-4" />Create a new Task</a>
@@ -102,34 +105,32 @@
                 </thead>
                 <tbody>
                     @foreach ($tasks as $task)
+                    @php
+                        if ($task->priority === "low") {
+                            $priority_class = 'low';
+                        } else if ($task->priority === "medium") {
+                            $priority_class = 'medium';
+                        } else {
+                            $priority_class = 'high';
+                        }
+                    @endphp
                         <tr class="border text-gray-800 dark:text-gray-300">
                             <td class="p-4">WEB-002</td>
                             <td class="p-4"><a href="{{route('tasks.show', $task->id)}}" class="text-md text-bold text-slate-900 dark:text-slate-300"><span>{{ $task->title }}</span></a></td>
                             <td class="p-4">In Progress</td>
                             <td class="p-4">{{ $task->assignedTo->full_name }}</td>
-                            <td class="p-4">Low</td>
+                            <td class="p-4"><span class="{{$priority_class}}">{{$task->priority}}</span></td>
                             <td class="p-4">{{ $task->due_date }}</td>
                         </tr>
                     @endforeach
+                    @if ($tasks->isEmpty())
+                        <tr>
+                            <td colspan="6">No tasks associated with this project.</td>
+                        </tr>
+                    @endif
                 </tbody>
             </table>
         </div>
-
-
-
-        <!-- Display Tasks Related to the Project -->
-        <h3 class="mt-4 text-lg font-semibold">Project Tasks</h3>
-        <ul class="mt-2">
-            @foreach ($tasks as $task)
-                <li class="flex justify-between mb-2">
-                    <a href="{{route('tasks.show', $task->id)}}" class="text-md text-bold text-slate-900 dark:text-slate-300"><span>{{ $task->title }}</span></a>
-                    <span class="text-sm text-gray-500">{{ $task->due_date ? $task->due_date->format('M d, Y') : 'No Due Date' }}</span>
-                </li>
-            @endforeach
-        </ul>
-        @if ($tasks->isEmpty())
-            <p>No tasks associated with this project.</p>
-        @endif
 
         <script>
             document.getElementById('status-select').addEventListener('change', function() {
