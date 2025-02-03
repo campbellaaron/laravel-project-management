@@ -23,7 +23,7 @@
 
             <div class="task-due-date">
                 <h3>Due Date:</h3>
-                <p>{{ $task->due_date ? $task->due_date->format('m d, Y, g:i a') : 'No due date' }}</p>
+                <p>{{ $task->due_date ? $task->due_date->format('F d, Y') : 'No due date' }}</p>
             </div>
 
             <form action="{{ route('tasks.complete', $task->id) }}" method="POST">
