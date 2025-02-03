@@ -13,8 +13,6 @@ class DashboardController extends Controller
 {
     public function dashboard()
     {
-        ini_set('max_execution_time', 120);
-
         // Get the authenticated user
         $user = Auth::user();
 
