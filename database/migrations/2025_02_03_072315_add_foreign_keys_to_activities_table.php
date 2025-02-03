@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('tasks', function (Blueprint $table) {
-            $table->enum('priority', ['low', 'medium', 'high'])->default('medium')->after('description');
+        Schema::table('activities', function (Blueprint $table) {
+            $table->foreign(['user_id'])->references(['id'])->on('users')->onUpdate('restrict')->onDelete('cascade');
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('tasks', function (Blueprint $table) {
-            $table->dropColumn('priority');
+        Schema::table('activities', function (Blueprint $table) {
+            $table->dropForeign('activities_user_id_foreign');
         });
     }
 };
