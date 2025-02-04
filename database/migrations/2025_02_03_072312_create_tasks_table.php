@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('task_key')->unique();
             $table->string('title');
             $table->text('description');
-            $table->enum('priority', ['low', 'medium', 'high'])->default('medium');
+            $table->enum('priority', ['low', 'medium', 'high', 'urgent'])->default('medium');
             $table->unsignedBigInteger('assigned_to')->nullable()->index('tasks_assigned_to_foreign');
             $table->dateTime('due_date')->nullable();
             $table->enum('status', ['pending', 'in-progress', 'completed'])->default('pending');

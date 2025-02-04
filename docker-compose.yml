@@ -1,36 +1,65 @@
 version: '3.8'
 
 services:
+  # Laravel App (PHP-FPM)
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    image: laravel-app
-    container_name: laravel-app
-    ports:
-      - 8000:80
+    container_name: laravel_app
+    restart: unless-stopped
+    working_dir: /var/www/html
     volumes:
       - .:/var/www/html
     networks:
-      - laravel-network
+      - laravel_network
     depends_on:
-      - db
+      - mysql
+      - nginx
 
-  db:
-    image: mysql:latest
-    container_name: mysql-db
-    environment:
-      MYSQL_ROOT_PASSWORD: secret
-      MYSQL_DATABASE: laravel
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+  # Nginx Service
+  nginx:
+    image: nginx:alpine
+    container_name: laravel_nginx
+    restart: unless-stopped
     ports:
-      - 33060:3306
+      - "8000:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
     networks:
-      - laravel-network
+      - laravel_network
+    depends_on:
+      - app
 
-  # You can optionally add a mail server here if needed, e.g. for testing mail sending.
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: laravel_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: laravel
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - laravel_network
+
+  # Redis (optional for cache/session management)
+  redis:
+    image: redis:alpine
+    container_name: laravel_redis
+    restart: unless-stopped
+    networks:
+      - laravel_network
+
+volumes:
+  mysql_data:
 
 networks:
-  laravel-network:
+  laravel_network:
     driver: bridge
