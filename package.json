@@ -18,6 +18,8 @@
     },
     "dependencies": {
         "@tailwindcss/vite": "^4.0.0",
+        "datatables.net": "^2.2.2",
+        "datatables.net-dt": "^2.2.2",
         "easymde": "^2.18.0"
     }
 }

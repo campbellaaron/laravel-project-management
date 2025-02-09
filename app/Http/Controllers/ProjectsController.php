@@ -14,7 +14,8 @@ class ProjectsController extends Controller
     // Display a list of tasks
     public function index()
     {
-        $projects = Project::all();
+        $projects = Project::with(['projectLead', 'users', 'tasks'])->withCount('tasks')->get();
+
         return view('projects.index', compact('projects'));
     }
 
@@ -28,26 +29,27 @@ class ProjectsController extends Controller
     // Store a newly created project in the database
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'status' => 'required|in:open,in-progress,completed',
             'start_date' => 'nullable|date',
-            'due_date' => 'nullable|date|after_or_equal:start_date',
+            'due_date' => 'nullable|date',
+            'project_lead_id' => 'nullable|exists:users,id',
             'team' => 'nullable|array',
             'team.*' => 'exists:users,id',
+            'roles' => 'nullable|array',
+            'roles.*' => 'in:watcher,contributor',
         ]);
 
-        $project = Project::create([
-            'name' => $request->name,
-            'description' => $request->description,
-            'status' => $request->status,
-            'start_date' => $request->start_date,
-            'due_date' => $request->due_date,
-        ]);
+        $project = Project::create($validated);
 
+        // Assign users with roles
         if ($request->has('team')) {
-            $project->users()->attach($request->team);
+            foreach ($request->team as $userId) {
+                $role = $request->roles[$userId] ?? 'contributor'; // Default role if none is provided
+                $project->users()->attach($userId, ['role' => $role]);
+            }
         }
 
         // When a project is created
@@ -78,19 +80,30 @@ class ProjectsController extends Controller
     // Update the specified project in the database
     public function update(Request $request, Project $project)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'status' => 'required|in:open,in-progress,completed',
+            'start_date' => 'nullable|date',
+            'due_date' => 'nullable|date',
             'project_lead_id' => 'nullable|exists:users,id',
+            'team' => 'nullable|array',
+            'team.*' => 'exists:users,id',
+            'roles' => 'nullable|array',
+            'roles.*' => 'in:watcher,contributor',
         ]);
 
-        $project->update([
-            'name' => $request->name,
-            'description' => $request->description,
-            'status' => $request->status,
-            'project_lead_id' => $request->project_lead_id,
-        ]);
+        $project->update($validated);
+
+        // Sync users and roles
+        $teamData = [];
+        if ($request->has('team')) {
+            foreach ($request->team as $userId) {
+                $teamData[$userId] = ['role' => $request->roles[$userId] ?? 'contributor'];
+            }
+        }
+
+        $project->users()->sync($teamData);
 
         if ($project->status == 'completed') {
             Activity::create([

@@ -65,12 +65,29 @@
                 </div>
 
                 <div class="mb-4">
-                    <label for="team" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Team Members</label>
-                    <select name="team[]" id="team" multiple class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Team Members & Roles</label>
+                    <div class="mt-2 space-y-2">
                         @foreach($users as $user)
-                            <option value="{{ $user->id }}">{{ $user->first_name }} {{ $user->last_name }}</option>
+                            <div class="flex items-center space-x-3">
+                                <input type="checkbox" name="team[]" value="{{ $user->id }}" id="user_{{ $user->id }}"
+                                    {{ isset($project) && $project->users->contains($user->id) ? 'checked' : '' }}>
+                                <label for="user_{{ $user->id }}" class="text-gray-700 dark:text-gray-300">
+                                    {{ $user->first_name }} {{ $user->last_name }}
+                                </label>
+
+                                <select name="roles[{{ $user->id }}]" class="ml-2 border rounded p-1">
+                                    <option value="contributor"
+                                        {{ isset($project) && $project->users()->wherePivot('role', 'contributor')->where('users.id', $user->id)->exists() ? 'selected' : '' }}>
+                                        Contributor
+                                    </option>
+                                    <option value="watcher"
+                                        {{ isset($project) && $project->users()->wherePivot('role', 'watcher')->where('users.id', $user->id)->exists() ? 'selected' : '' }}>
+                                        Watcher
+                                    </option>
+                                </select>
+                            </div>
                         @endforeach
-                    </select>
+                    </div>
                 </div>
 
                 <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg">

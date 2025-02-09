@@ -8,7 +8,7 @@ class Project extends Model
 {
     // Define the mass assignable attributes
     protected $fillable = [
-        'name', 'description', 'status', 'start_date', 'due_date',
+        'name', 'description', 'status', 'start_date', 'due_date', 'project_lead_id',
     ];
 
     protected $casts = [

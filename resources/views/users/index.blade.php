@@ -84,7 +84,7 @@
         </div>
     </div>
     <div class="p-6 px-0 overflow-scroll">
-        <table class="w-full mt-4 text-left table-auto min-w-max">
+        <table class="users-table w-full mt-4 text-left table-auto min-w-max datatable">
             <thead>
                 <tr>
                     <th class="p-4 border-y border-blue-gray-100 bg-blue-gray-50/50">
