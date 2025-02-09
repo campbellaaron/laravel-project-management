@@ -87,7 +87,7 @@
                             <div class="flex flex-col">
                                 <p class="block antialiased font-sans text-sm text-center leading-normal text-blue-gray-900 font-normal">
                                     @php
-                                        $totalSeconds = max(0, $task->totalTrackedTime()); // Ensure no negatives
+                                        $totalSeconds = max(0, $project->totalTrackedTime()); // Ensure no negatives
                                         $hours = intdiv($totalSeconds, 3600);
                                         $minutes = intdiv($totalSeconds % 3600, 60);
                                         $seconds = $totalSeconds % 60;

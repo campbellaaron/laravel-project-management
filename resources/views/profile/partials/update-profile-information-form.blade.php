@@ -55,6 +55,18 @@
                 </div>
             @endif
         </div>
+        <div class="mb-4">
+            <label for="timezone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Timezone</label>
+            <select name="timezone" id="timezone"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
+                @foreach (timezone_identifiers_list() as $tz)
+                    <option value="{{ $tz }}" {{ auth()->user()->timezone == $tz ? 'selected' : '' }}>
+                        {{ $tz }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
 
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>

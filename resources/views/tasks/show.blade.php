@@ -111,6 +111,8 @@
                 <button type="submit" class="mt-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">Add Comment</button>
             </form>
         </div>
+
+        <!-- Time Tracking Logs -->
         <div class="mt-6 p-4 border rounded-md bg-gray-100 dark:bg-gray-800">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Time Log</h3>
 
@@ -139,7 +141,7 @@
                             <td class="p-2">
                                 {{ $entry->description == 'Manual entry' ? 'Manual' : 'Timer' }}
                             </td>
-                            <td class="p-2">{{ $entry->created_at->format('M d, Y h:i a') }}</td>
+                            <td class="p-2">{{ $entry->created_at->timezone(auth()->user()->timezone)->format('F d, Y h:i A') }}</td>
                             <td class="p-2">
                                 @if(auth()->user()->id == $entry->user_id || auth()->user()->hasRole('admin'))
                                     <!-- Edit Button -->

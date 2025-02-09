@@ -27,16 +27,26 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        // Validate the request
+        $validatedData = $request->validated();
 
+        // Update user with validated data
+        $request->user()->fill($validatedData);
+
+        // If email changes, reset verification
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
         }
 
+        // Save the user profile updates
         $request->user()->save();
+
+        // Apply the new timezone to the session
+        session(['timezone' => $request->user()->timezone]);
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
+
 
     public function show(User $user)
     {
