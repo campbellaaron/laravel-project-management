@@ -63,6 +63,11 @@ class User extends Authenticatable
         return $this->first_name .' '. $this->last_name;
     }
 
+    public function getAvatarAttribute()
+    {
+        return $this->avatar ?? 'https://ui-avatars.com/api/?name=' . urlencode($this->full_name) . '&background=random';
+    }
+
     public function teams()
     {
         return $this->belongsToMany(Team::class);

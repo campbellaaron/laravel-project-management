@@ -10,10 +10,19 @@
 
     @section('content')
         <div class="container">
+            @php
+                if ($project->status === "open") {
+                    $project_status = "open";
+                } else if ($project->status === "in-progress") {
+                    $project_status = "in-progress";
+                } else {
+                    $project_status = "project-table-status";
+                }
+            @endphp
             <div class="flex justify-between flex-col lg:flex-row items-center px-6 py-3">
                 <div>
                     <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-500">Project: {{ $project->name }}</h2>
-                    <p class="text-gray-900 dark:text-gray-500">Status: <span id="project-status">{{ $project->formatted_status }}</span></p>
+                    <p class="text-gray-900 dark:text-gray-500">Status: <span id="project-status" class="{{$project_status}} text-gray-200 py-1 px-2 rounded-md">{{ $project->formatted_status }}</span></p>
                 </div>
                 <div class="flex flex-col md:flex-row md:items-start px-3 py-4 hazardzone">
                     <span class="text-gray-900 dark:text-gray-500">Change Project Status: </span>
@@ -76,7 +85,7 @@
                             @foreach ($project->users as $user)
                                 <tr class="border text-gray-800 dark:text-gray-300">
                                     <td class="p-2">{{ $user->full_name }}</td>
-                                    <td class="p-2">{{ ucfirst($user->pivot->role) }}</td>
+                                    <td class="p-2 text-center">{{ ucfirst($user->pivot->role) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>

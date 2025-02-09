@@ -34,20 +34,21 @@ class ProjectsController extends Controller
             'description' => 'required|string',
             'status' => 'required|in:open,in-progress,completed',
             'start_date' => 'nullable|date',
-            'due_date' => 'nullable|date',
+            'due_date' => 'nullable|date|after_or_equal:start_date',
             'project_lead_id' => 'nullable|exists:users,id',
-            'team' => 'nullable|array',
-            'team.*' => 'exists:users,id',
-            'roles' => 'nullable|array',
-            'roles.*' => 'in:watcher,contributor',
         ]);
 
         $project = Project::create($validated);
 
-        // Assign users with roles
-        if ($request->has('team')) {
-            foreach ($request->team as $userId) {
-                $role = $request->roles[$userId] ?? 'contributor'; // Default role if none is provided
+        // Assign Project Lead
+        if ($request->has('project_lead_id')) {
+            $project->update(['project_lead_id' => $request->project_lead_id]);
+        }
+
+        // Attach users with roles
+        if ($request->has('team_members')) {
+            foreach ($request->team_members as $userId => $data) {
+                $role = $data['role'] ?? 'contributor';
                 $project->users()->attach($userId, ['role' => $role]);
             }
         }
@@ -85,25 +86,24 @@ class ProjectsController extends Controller
             'description' => 'required|string',
             'status' => 'required|in:open,in-progress,completed',
             'start_date' => 'nullable|date',
-            'due_date' => 'nullable|date',
+            'due_date' => 'nullable|date|after_or_equal:start_date',
             'project_lead_id' => 'nullable|exists:users,id',
-            'team' => 'nullable|array',
-            'team.*' => 'exists:users,id',
-            'roles' => 'nullable|array',
-            'roles.*' => 'in:watcher,contributor',
         ]);
 
         $project->update($validated);
 
-        // Sync users and roles
-        $teamData = [];
-        if ($request->has('team')) {
-            foreach ($request->team as $userId) {
-                $teamData[$userId] = ['role' => $request->roles[$userId] ?? 'contributor'];
+        // Update Project Lead
+        $project->update(['project_lead_id' => $request->project_lead_id]);
+
+        // Sync users with roles
+        $assignedUsers = [];
+        if ($request->has('team_members')) {
+            foreach ($request->team_members as $userId => $data) {
+                $role = $data['role'] ?? 'contributor';
+                $assignedUsers[$userId] = ['role' => $role];
             }
         }
-
-        $project->users()->sync($teamData);
+        $project->users()->sync($assignedUsers);
 
         if ($project->status == 'completed') {
             Activity::create([

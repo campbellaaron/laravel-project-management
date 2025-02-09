@@ -39,7 +39,7 @@
                         <th class="px-6 py-4 font-bold text-base lg:text-lg text-gray-900 dark:text-white"><a href="{{ route('tasks.show', $task) }}">{{ $task->title }}</a></th>
                         <td class="px-6 py-4">{{ $task->description }}</td>
                         <td class="px-6 py-4">{{ $task->project->name }}</td>
-                        <td class="px-6 py-4 bold">{{ $task->assignedTo->name }}</td>
+                        <td class="px-6 py-4 bold">{{ $task->assignedTo->first_name }}</td>
                         <td class="px-6 py-4">{{ $task->due_date ? $task->due_date->format('M d, Y') : 'No due date' }}</td>
                         <td class="px-6 py-4 uppercase text-white"><span class="{{ $priority_class }} rounded-md font-bold">{{ $task->priority }}</span></td>
                         <td class="px-4 py-4">

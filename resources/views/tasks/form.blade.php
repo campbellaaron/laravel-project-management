@@ -63,7 +63,7 @@
                         required>
                         @foreach ($users as $user)
                             <option value="{{ $user->id }}" {{ isset($task) && $user->id == $task->assigned_to ? 'selected' : '' }}>
-                                {{ $user->full_name }}
+                                {{ $user->full_name }} {{ auth()->id() == $user->id ? "(You)" : "" }}
                             </option>
                         @endforeach
                     </select>

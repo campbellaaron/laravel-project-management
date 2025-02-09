@@ -62,19 +62,17 @@
                             </div>
                         </td>
                         <td class="p-4 border-b border-blue-gray-50">
-                            <div class="flex items-center gap-3">
-                                <div class="flex flex-col">
-                                    @if ($project->users->count() > 4)
-                                        @foreach ($project->users->take(4) as $user)
-                                            <span>{{ $user->full_name }}</span>
-                                        @endforeach
-                                        <span>+{{ $project->users->count() - 4 }} more</span>
-                                    @else
-                                        @foreach ($project->users as $user)
-                                            <span>{{ $user->full_name }}</span>
-                                        @endforeach
-                                    @endif
-                                </div>
+                            <div class="flex items-center gap-0">
+                                @if ($project->users->count() > 4)
+                                    @foreach ($project->users->take(4) as $user)
+                                        <span><img src="{{ $user->avatar }}" alt="{{ $user->full_name }}" class="w-4 h-4 rounded-full" /></span>
+                                    @endforeach
+                                    <span>+{{ $project->users->count() - 4 }} more</span>
+                                @else
+                                    @foreach ($project->users as $user)
+                                        <span><img src="{{ $user->avatar }}" alt="{{ $user->full_name }}" class="w-6 h-6 rounded-full" title="{{ $user->full_name }}" /></span>
+                                    @endforeach
+                                @endif
                             </div>
                         </td>
                         <td class="p-4 border-b border-blue-gray-50">
