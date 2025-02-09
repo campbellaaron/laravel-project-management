@@ -100,7 +100,9 @@
         <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md my-6 md:my-2">
             <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">Project Tasks</h3>
             <!-- Create Task for this Project button -->
-            <a href="{{ route('tasks.create') }}" class="flex items-center rounded-md bg-amber-600 py-2 px-4 border border-transparent text-center text-sm text-slate-800 transition-all shadow-md hover:shadow-lg focus:bg-amber-700 focus:shadow-none active:bg-amber-700 hover:bg-amber-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none ml-2"><x-fluentui-task-list-square-add-24-o class="h-6 w-6 mr-4" />Create a new Task</a>
+            <div class="flex items-center justify-start">
+                <a href="{{ route('tasks.create') }}" class="flex items-center rounded-md bg-amber-600 py-2 px-4 border border-transparent text-center text-sm text-slate-800 transition-all shadow-md hover:shadow-lg focus:bg-amber-700 focus:shadow-none active:bg-amber-700 hover:bg-amber-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none ml-2"><x-fluentui-task-list-square-add-24-o class="h-6 w-6 mr-4" />Create a new Task</a>
+            </div>
             <table class="w-full mt-4 border-collapse border border-gray-300 dark:border-gray-600">
                 <thead>
                     <tr class="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100">
@@ -108,6 +110,7 @@
                         <th class="border p-2">Task Name</th>
                         <th class="border p-2">Status</th>
                         <th class="border p-2">Assignee</th>
+                        <th class="border p-2">Tracked Time</th>
                         <th class="border p-2">Priority</th>
                         <th class="border p-2">Due Date</th>
                     </tr>
@@ -128,6 +131,13 @@
                             <td class="p-4"><a href="{{route('tasks.show', $task->id)}}" class="text-md text-bold text-slate-900 dark:text-slate-300"><span>{{ $task->title }}</span></a></td>
                             <td class="p-4">In Progress</td>
                             <td class="p-4">{{ $task->assignedTo->full_name }}</td>
+                            <td class="p-4">@php
+                                $totalSeconds = max(0, $task->totalTrackedTime()); // Ensure no negatives
+                                $hours = intdiv($totalSeconds, 3600);
+                                $minutes = intdiv($totalSeconds % 3600, 60);
+                                $seconds = $totalSeconds % 60;
+                            @endphp
+                            {{ sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds) }}</td>
                             <td class="p-4"><span class="{{$priority_class}}">{{$task->priority}}</span></td>
                             <td class="p-4">{{ $task->due_date }}</td>
                         </tr>

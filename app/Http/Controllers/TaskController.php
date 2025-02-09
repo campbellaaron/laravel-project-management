@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Activity;
+use App\Models\TimeEntry;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use App\Models\Comment;
+use Carbon\Carbon;
 use App\Notifications\TaskAssigned;
 use App\Notifications\TaskReassigned;
 use Illuminate\Http\Request;
@@ -195,6 +197,84 @@ class TaskController extends Controller
 
         return redirect()->route('tasks.show', $task);
     }
+
+    public function isTracking(Task $task)
+    {
+        $runningEntry = $task->timeEntries()->whereNull('ended_at')->latest()->first();
+
+        return response()->json([
+            'is_tracking' => (bool) $runningEntry,
+            'started_at' => $runningEntry ? strtotime($runningEntry->started_at) * 1000 : null, // Convert to JS timestamp
+        ]);
+
+    }
+
+    public function addManualTime(Request $request, Task $task)
+    {
+        $request->validate([
+            'manual_hours' => 'nullable|integer|min:0',
+            'manual_minutes' => 'nullable|integer|min:0|max:59',
+        ]);
+
+        // Convert hours & minutes into total seconds
+        $totalSeconds = ($request->manual_hours * 3600) + ($request->manual_minutes * 60);
+
+        if ($totalSeconds > 0) {
+            $task->timeEntries()->create([
+                'user_id' => auth()->id(),
+                'started_at' => now()->subSeconds($totalSeconds), // Approximate backdating
+                'ended_at' => now(),
+                'description' => 'Manual entry',
+            ]);
+        }
+
+        return redirect()->route('tasks.show', $task->id)->with('success', 'Time added successfully!');
+    }
+
+    public function updateTimeEntry(Request $request, TimeEntry $entry)
+    {
+        // Ensure only the user who logged time or an admin can edit
+        if (auth()->user()->id !== $entry->user_id && !auth()->user()->hasAnyRole(['admin', 'super-admin'])) {
+            return redirect()->back()->with('error', 'You do not have permission to edit this entry.');
+        }
+
+        $request->validate([
+            'hours' => 'nullable|integer|min:0',
+            'minutes' => 'nullable|integer|min:0|max:59',
+        ]);
+
+        // Convert to seconds
+        $totalSeconds = ($request->hours * 3600) + ($request->minutes * 60);
+
+        if ($totalSeconds > 0) {
+            $entry->started_at = now()->subSeconds($totalSeconds);
+            $entry->ended_at = now();
+            $entry->save();
+        }
+
+        return redirect()->back()->with('success', 'Time entry updated successfully.');
+    }
+
+    public function deleteTimeEntry(TimeEntry $entry)
+    {
+        // Ensure only the user who logged time or an admin can delete
+        if (auth()->user()->id !== $entry->user_id && !auth()->user()->hasAnyRole(['admin', 'super-admin'])) {
+            return redirect()->back()->with('error', 'You do not have permission to delete this entry.');
+        }
+
+        $entry->delete();
+
+        return redirect()->back()->with('success', 'Time entry deleted successfully.');
+    }
+
+
+    public function totalTime(Task $task)
+    {
+        return response()->json([
+            'total' => $task->totalTrackedTime()
+        ]);
+    }
+
 
     // Remove the specified task from the database
     public function destroy(Task $task)

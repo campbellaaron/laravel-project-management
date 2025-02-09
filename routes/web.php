@@ -6,6 +6,9 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\TimeTrackingController;
+use App\Http\Controllers\TimeReportController;
+use App\Http\Controllers\TimeLogController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Http\Request;
@@ -25,8 +28,12 @@ Route::middleware('can:create-roles')->group(function () {
 });
 
 Route::middleware(['auth', 'role:admin|super-admin'])->group(function () {
-    Route::resource('users', UserController::class); // Only admins and super-admins can access users
+    Route::resource('users', UserController::class);
     Route::resource('teams', TeamController::class);
+    Route::get('/time-logs', [TimeLogController::class, 'index'])->name('admin.time-logs.index');
+    Route::get('/time-logs/{id}/edit', [TimeLogController::class, 'edit'])->name('admin.time-logs.edit');
+    Route::put('/time-logs/{id}', [TimeLogController::class, 'update'])->name('admin.time-logs.update');
+    Route::delete('/time-logs/{id}', [TimeLogController::class, 'destroy'])->name('admin.time-logs.destroy');
 
 });
 
@@ -34,6 +41,9 @@ Route::group(['middleware'=> 'role:admin|super-admin|manager'], function () {
     // Block 'user' role from creating or editing projects
     Route::get('projects/create', [ProjectsController::class, 'create'])->middleware('role:admin|super-admin|manager')->name('projects.create');
     Route::get('projects/{project}/edit', [ProjectsController::class, 'edit'])->middleware('role:admin|super-admin|manager')->name('projects.edit');
+    Route::get('/reports/time-logs', [TimeReportController::class, 'index'])->name('reports.time_logs');
+    Route::get('/reports/export-csv', [TimeReportController::class, 'exportCsv'])->name('reports.export_csv');
+
 });
 
 
@@ -52,6 +62,18 @@ Route::middleware('auth')->group(function () {
     Route::patch('/projects/{project}/assign-users', [ProjectsController::class, 'assignUsers'])
     ->middleware(['auth', 'role:admin|super-admin|manager'])
     ->name('projects.assignUsers');
+
+    // Time tracking for tasks
+    Route::post('/tasks/{task}/start-timer', [TimeTrackingController::class, 'startTimer'])->name('tasks.start-timer');
+    Route::post('/tasks/{task}/stop-timer', [TimeTrackingController::class, 'stopTimer'])->name('tasks.stop-timer');
+    Route::get('/tasks/{task}/total-time', function (Task $task) {
+        return response()->json(['total' => $task->totalTrackedTime()]);
+    });
+    Route::get('/tasks/{task}/is-tracking', [TaskController::class, 'isTracking']);
+    Route::get('/tasks/{task}/total-time', [TaskController::class, 'totalTime']);
+    Route::post('/tasks/{task}/manual-time', [TaskController::class, 'addManualTime'])->name('tasks.addManualTime');
+    Route::patch('/time-entries/{entry}/update', [TaskController::class, 'updateTimeEntry'])->name('tasks.updateTimeEntry');
+    Route::delete('/time-entries/{entry}/delete', [TaskController::class, 'deleteTimeEntry'])->name('tasks.deleteTimeEntry');
 
 
     // Task resource route will automatically generate the 'create', 'store', 'edit', 'update', etc.

@@ -23,6 +23,9 @@
                     <p class="antialiased font-sans text-sm text-blue-gray-900 flex items-center justify-between gap-2 font-normal leading-none opacity-70">Number of Tasks <x-fluentui-chevron-up-down-24 class="h-4 w-4"/></p>
                   </th>
                   <th class="cursor-pointer border-y border-blue-gray-100 p-4 transition-colors hover:bg-gray-500">
+                    <p class="antialiased font-sans text-sm text-blue-gray-900 flex items-center justify-between gap-2 font-normal leading-none opacity-70">Total Time Tracked <x-fluentui-chevron-up-down-24 class="h-4 w-4"/></p>
+                  </th>
+                  <th class="cursor-pointer border-y border-blue-gray-100 p-4 transition-colors hover:bg-gray-500">
                     <p class="antialiased font-sans text-sm text-blue-gray-900 flex items-center justify-between gap-2 font-normal leading-none opacity-70">Status <x-fluentui-chevron-up-down-24 class="h-4 w-4"/></p>
                   </th>
                   <th class="cursor-pointer border-y border-blue-gray-100 p-4 transition-colors hover:bg-gray-500">
@@ -78,6 +81,19 @@
                         <td class="p-4 border-b border-blue-gray-50">
                             <div class="flex flex-col">
                               <p class="block antialiased font-sans text-sm text-center leading-normal text-blue-gray-900 font-normal">{{ $project->tasks_count }}</p>
+                            </div>
+                        </td>
+                        <td class="p-4 border-b border-blue-gray-50">
+                            <div class="flex flex-col">
+                                <p class="block antialiased font-sans text-sm text-center leading-normal text-blue-gray-900 font-normal">
+                                    @php
+                                        $totalSeconds = max(0, $task->totalTrackedTime()); // Ensure no negatives
+                                        $hours = intdiv($totalSeconds, 3600);
+                                        $minutes = intdiv($totalSeconds % 3600, 60);
+                                        $seconds = $totalSeconds % 60;
+                                    @endphp
+                                    {{ sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds) }}
+                                </p>
                             </div>
                         </td>
                         <td class="p-4 border-b border-blue-gray-50">

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use App\Models\Project;
+use Carbon\Carbon;
 
 class Task extends Model
 {
@@ -57,5 +58,20 @@ class Task extends Model
     public function project()
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function timeEntries()
+    {
+        return $this->hasMany(TimeEntry::class);
+    }
+
+    public function totalTrackedTime()
+    {
+        return $this->timeEntries()
+            ->whereNotNull('ended_at') // Ensure only completed time entries are counted
+            ->get()
+            ->sum(function ($entry) {
+                return Carbon::parse($entry->started_at)->diffInSeconds(Carbon::parse($entry->ended_at));
+            });
     }
 }
