@@ -142,12 +142,14 @@
                             <div class="flex flex-col">
                                 <p
                                     class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
-                                    Manager
+                                    {{ $user->team_names ?: 'No Team' }}
                                 </p>
-                                <p
-                                    class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900 opacity-70">
-                                    Organization
-                                </p>
+                                @if (auth()->user()->hasRole('super-admin'))
+                                    <p
+                                        class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900 opacity-70">
+                                        {{ $user->getRoleNames()->join(', ') }}
+                                    </p>
+                                @endif
                             </div>
                         </td>
                         <td class="p-4 border-b border-blue-gray-50">

@@ -37,7 +37,7 @@
                             <div class="flex items-center gap-3">
                               <div class="flex flex-col">
                                 <p class="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal">{{ $project->name }}</p>
-                                <p class="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal opacity-70">Start date: 10 Dec 2023</p>
+                                <p class="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal opacity-70">Start date: {{ $project->start_date->format("M d, Y") }}</p>
                               </div>
                             </div>
                         </td>
@@ -63,7 +63,7 @@
                             </div>
                         </td>
                         <td class="p-4 border-b border-blue-gray-50">
-                            <p class="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal">23/04/18</p>
+                            <p class="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal">Deadline: {{ $project->due_date->format("M d, Y") }}</p>
                         </td>
                         <td class="p-4 border-b border-blue-gray-50">
                             <div class="flex justify-evenly items-end">

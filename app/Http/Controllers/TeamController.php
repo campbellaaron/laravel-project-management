@@ -24,11 +24,14 @@ class TeamController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:teams,name',
-            'users' => 'array',
+            'users' => 'nullable|array',
+            'users.*' => 'exists:users,id',
         ]);
 
         $team = Team::create(['name' => $request->name]);
-        $team->users()->sync($request->users);
+        if ($request->has('users')) {
+            $team->users()->sync($request->users);
+        }
 
         return redirect()->route('teams.index')->with('success', 'Team created successfully.');
     }
@@ -43,11 +46,14 @@ class TeamController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:teams,name,' . $team->id,
-            'users' => 'array',
+            'users' => 'nullable|array',
+            'users.*' => 'exists:users,id',
         ]);
 
         $team->update(['name' => $request->name]);
-        $team->users()->sync($request->users);
+        if ($request->has('users')) {
+            $team->users()->sync($request->users);
+        }
 
         return redirect()->route('teams.index')->with('success', 'Team updated successfully.');
     }

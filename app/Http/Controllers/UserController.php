@@ -15,7 +15,7 @@ class UserController extends Controller
     }
     public function index()
     {
-        $users = User::all();
+        $users = User::with(['teams', 'roles'])->get();
         return view("users.index", compact("users"));
     }
 

@@ -11,6 +11,11 @@ class Project extends Model
         'name', 'description', 'status', 'start_date', 'due_date',
     ];
 
+    protected $casts = [
+        'start_date' => 'date',
+        'due_date' => 'date',
+    ];
+
     public function users()
     {
         return $this->belongsToMany(User::class, 'project_user')->withPivot('role')->withTimestamps();

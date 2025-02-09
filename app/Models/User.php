@@ -68,6 +68,11 @@ class User extends Authenticatable
         return $this->belongsToMany(Team::class);
     }
 
+    public function getTeamNamesAttribute()
+    {
+        return $this->teams->pluck('name')->join(', ');
+    }
+
     public function projectsLed()
     {
         return $this->hasMany(Project::class, 'project_lead_id');
