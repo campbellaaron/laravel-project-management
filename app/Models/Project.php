@@ -52,6 +52,11 @@ class Project extends Model
         return $this->hasMany(Task::class);
     }
 
+    public function attachments()
+    {
+        return $this->hasMany(Attachment::class);
+    }
+
     public function totalTrackedTime(): int
     {
         return $this->tasks->sum(function ($task) {

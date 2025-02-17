@@ -27,7 +27,7 @@
                 {{ isset($task) ? 'Edit Task' : 'Create a New Task' }}
             </h2>
 
-            <form action="{{ isset($task) ? route('tasks.update', $task) : route('tasks.store') }}" method="POST" class="space-y-4">
+            <form id="task-form" action="{{ isset($task) ? route('tasks.update', $task) : route('tasks.store') }}" method="POST" class="space-y-4" enctype="multipart/form-data">
                 @csrf
                 @isset($task)
                     @method('PUT')
@@ -47,8 +47,10 @@
                 <!-- Description -->
                 <div>
                     <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
+                    <progress id="upload-progress" value="0" max="100" style="display: none; width: 100%;"></progress>
+                    <input type="hidden" name="upload_folder" value="tasks">
                     <textarea name="description" id="description" rows="4"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+                        class="rte mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
                         required>{{ old('description', $task->description ?? '') }}</textarea>
                     @error('description')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -104,6 +106,12 @@
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
                 </div>
 
+                <div class="mb-4">
+                    <label for="attachments" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Attachments</label>
+                    <input type="file" name="attachments[]" id="attachments" multiple
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                </div>
+
                 <!-- Submit Button -->
                 <div class="flex justify-between">
                     <button type="submit"
@@ -118,4 +126,52 @@
             </form>
         </div>
     </div>
+    <script src="https://cdn.tiny.cloud/1/{{ env('TINYMCE_API_KEY') }}/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        tinymce.init({
+            selector: 'textarea.rte',
+            skin: document.documentElement.classList.contains('dark') ? 'oxide-dark' : 'oxide',
+            content_css: document.documentElement.classList.contains('dark') ? 'dark' : 'default',
+            menubar: false,
+            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+            branding: false,
+            height: 400,
+            images_upload_url: '/upload-image',
+            automatic_uploads: true,
+            file_picker_types: 'image file media',
+            images_file_types: 'jpg,svg,webp,png,gif',
+            images_upload_handler: function (blobInfo, success, failure) {
+                let formData = new FormData();
+                formData.append('file', blobInfo.blob(), blobInfo.filename());
+
+                fetch('/upload-image', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
+            }
+        });
+
+
+
+    const form = document.getElementById("task-form");
+        const fileInput = document.getElementById("attachment");
+        const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+
+        form.addEventListener("submit", function (event) {
+            if (fileInput.files.length > 0) {
+                let file = fileInput.files[0];
+                if (file.size > maxSize) {
+                    alert("File size exceeds 10MB. Please choose a smaller file.");
+                    event.preventDefault(); // Stop form submission
+                }
+            }
+        });
+});
+</script>
 @endsection

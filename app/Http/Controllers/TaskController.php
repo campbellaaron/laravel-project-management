@@ -17,17 +17,22 @@ use Illuminate\Support\Facades\Auth;
 class TaskController extends Controller
 {
     // Display a list of tasks
-    public function index()
+    public function index(Request $request)
     {
-        // Check if the user is a super admin or a normal user
-        if (auth()->user()->is_admin) {
-            // If super admin, show all tasks and eager load the 'assignedTo' and 'project' relationships
+        $filter = $request->query('filter', 'my'); // Default to 'my' tasks
+
+        if ($filter === 'all') {
+            // Show all tasks with assigned users & projects
             $tasks = Task::with(['assignedTo', 'project'])->get();
         } else {
-            // If normal user, show only tasks assigned to the logged-in user
-            $tasks = Task::with(['assignedTo', 'project'])->where('assigned_to', auth()->id())->where('completed', false)->get();
+            // Show only tasks assigned to the logged-in user
+            $tasks = Task::with(['assignedTo', 'project'])
+                        ->where('assigned_to', auth()->id())
+                        ->where('completed', false)
+                        ->get();
         }
-        return view('tasks.index', compact('tasks'));
+
+        return view('tasks.index', compact('tasks', 'filter'));
     }
 
     // Show the form for creating a new task
@@ -56,6 +61,7 @@ class TaskController extends Controller
         'due_date' => 'nullable|date',
         'priority' => 'required|in:low,medium,high,urgent',
         'project_id' => 'required|exists:projects,id',
+        'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx,svg,ai,psd,gif|max:10240',
     ]);
 
     // Create the task
@@ -81,7 +87,13 @@ class TaskController extends Controller
             'description' => auth()->user()->first_name . ' assigned task: ' . $task->title . ' to ' . $user->full_name,
         ]);
 
-        \Log::info('Activity logged for task assignment: ' . $task->title . ' to ' . $user->name);
+        // Handle file uploads
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $path = $file->store('attachments', 'public');
+                $task->attachments()->create(['path' => $path]);
+            }
+        }
 
         // Send a notification to the assigned user
         $user->notify(new TaskAssigned($task));

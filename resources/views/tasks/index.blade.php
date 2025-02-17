@@ -4,11 +4,27 @@
 
 @section('content')
 <div class="p-3 flex flex-col items-start justify-center">
-    <a href="{{ route('tasks.create') }}" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Create New Task</a>
+    <div class="p-2 flex items-start justify-between gap-4">
+        <a href="{{ route('tasks.create') }}" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Create New Task</a>
 
-    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+        <div class="flex space-x-4">
+            <!-- Show "All Tasks" button if not already selected -->
+            <a href="{{ route('tasks.index', ['filter' => 'all']) }}"
+                class="px-4 py-2 rounded-lg text-white font-semibold transition-all shadow-md
+                    {{ request('filter') === 'all' ? 'bg-gray-900 dark:bg-gray-800' : 'bg-gray-600 hover:bg-gray-700' }}">
+                All Tasks
+            </a>
 
-        <table class="tasks-table w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400 border-collapse overflow-x-auto datatable">
+            <!-- Show "My Tasks" button if not already selected -->
+            <a href="{{ route('tasks.index', ['filter' => 'my']) }}"
+                class="px-4 py-2 rounded-lg text-white font-semibold transition-all shadow-md
+                    {{ request('filter') === 'my' || request('filter') === null ? 'bg-gray-900' : 'bg-gray-600 hover:bg-gray-700' }}">
+                My Tasks
+            </a>
+        </div>
+    </div>
+    <div class="relative overflow-x-auto shadow-md sm:rounded-lg text-gray-600 dark:text-gray-400">
+        <table class="tasks-table w-full text-sm text-left rtl:text-right border-collapse overflow-x-auto datatable">
             <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                 <tr>
                     <th scope="col" class="px-6 py-3">Task ID</th>
@@ -23,17 +39,17 @@
             </thead>
             <tbody>
                 @foreach ($tasks as $task)
-                @php
-                    if ($task->priority === "urgent") {
-                        $priority_class = 'urgent';
-                    } else if ($task->priority === "high") {
-                        $priority_class = 'high';
-                    } else if ($task->priority === "medium") {
-                        $priority_class = 'medium';
-                    } else {
-                        $priority_class = 'low';
-                    }
-                @endphp
+                    @php
+                        if ($task->priority === "urgent") {
+                            $priority_class = 'urgent';
+                        } else if ($task->priority === "high") {
+                            $priority_class = 'high';
+                        } else if ($task->priority === "medium") {
+                            $priority_class = 'medium';
+                        } else {
+                            $priority_class = 'low';
+                        }
+                    @endphp
                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-300 dark:hover:bg-gray-800">
                         <th scope="row" class="px-6 py-4">{{ $task->task_key }}</th>
                         <th class="px-6 py-4 font-bold text-base lg:text-lg text-gray-900 dark:text-white"><a href="{{ route('tasks.show', $task) }}">{{ $task->title }}</a></th>

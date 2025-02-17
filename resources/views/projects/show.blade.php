@@ -64,8 +64,20 @@
                                 {{ $project->name }}
                         </h5>
                         <!-- Project Description -->
-                        <div class="text-slate-600 leading-normal font-light">{{ $project->description }}</div>
+                        <div class="text-slate-600 leading-normal font-light">{!! strip_tags($project->description, '<p><br><ul><li><strong><em><img>') !!}</div>
                     </div>
+                    @if ($project->attachments->count())
+                        <h3 class="text-lg font-semibold">Attachments:</h3>
+                        <ul>
+                            @foreach ($project->attachments as $attachment)
+                                <li>
+                                    <a href="{{ $attachment->url }}" target="_blank" class="text-blue-500 hover:underline">
+                                        {{ basename($attachment->path) }}
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
                     <div class="mx-3 border-t border-slate-200 pb-3 pt-2 px-1">
                         <span class="text-sm text-slate-600 font-medium">
                             <strong>Project Lead:</strong> {{ $project->projectLead ? $project->projectLead->full_name : 'Not Assigned' }}
@@ -144,7 +156,7 @@
                     @endforeach
                     @if ($tasks->isEmpty())
                         <tr>
-                            <td colspan="6">No tasks associated with this project.</td>
+                            <td colspan="7" class="bg-gray-500 text-blue-500 dark:text-gray-100">No tasks associated with this project.</td>
                         </tr>
                     @endif
                 </tbody>

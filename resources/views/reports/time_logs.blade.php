@@ -48,12 +48,12 @@
         </thead>
         <tbody>
             @foreach ($timeEntries as $entry)
-                <tr>
+                <tr class="bg-gray-300 dark:bg-gray-700 text-slate-800 dark:text-slate-300">
                     <td class="border px-4 py-2">{{ $entry->user->full_name }}</td>
                     <td class="border px-4 py-2">{{ $entry->task->title }}</td>
                     <td class="border px-4 py-2">{{ $entry->task->project->name }}</td>
-                    <td class="border px-4 py-2">{{ $entry->started_at }}</td>
-                    <td class="border px-4 py-2">{{ $entry->ended_at ?? 'Ongoing' }}</td>
+                    <td class="border px-4 py-2">{{ $entry->started_at->timezone(auth()->user()->timezone)->format('F d, Y h:i A') }}</td>
+                    <td class="border px-4 py-2">{{ $entry->ended_at->timezone(auth()->user()->timezone)->format('F d, Y h:i A') ?? 'Ongoing' }}</td>
                     <td class="border px-4 py-2">
                         @if ($entry->ended_at)
                             {{ gmdate("H:i:s", $entry->ended_at->diffInSeconds($entry->started_at)) }}

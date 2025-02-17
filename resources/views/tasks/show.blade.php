@@ -86,8 +86,23 @@
         <!-- Task Description -->
         <div class="mb-4">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Description</h3>
-            <p class="text-gray-700 dark:text-gray-300">{{ $task->description }}</p>
+            <p class="text-gray-700 dark:text-gray-300">{!! strip_tags($task->description, '<p><br><ul><li><strong><em><img>') !!}</p>
         </div>
+
+        <!-- Display Attachments -->
+        @if ($task->attachments->count())
+            <h3 class="text-lg font-semibold">Attachments:</h3>
+            <ul>
+                @foreach ($task->attachments as $attachment)
+                    <li>
+                        <a href="{{ $attachment->url }}" target="_blank" class="text-blue-500 hover:underline">
+                            {{ basename($attachment->path) }}
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+            {!! str_replace('.pdf', '.pdf" target="_blank', $task->description) !!}
+        @endif
 
         <!-- Task Comments -->
         <div class="border-t pt-4">
@@ -107,7 +122,9 @@
 
             <form action="{{ route('tasks.storeComment', $task) }}" method="POST" class="mt-4">
                 @csrf
-                <textarea name="content" required class="w-full p-2 border rounded-md"></textarea>
+                <progress id="upload-progress" value="0" max="100" style="display: none; width: 100%;"></progress>
+                <input type="hidden" name="upload_folder" value="comments">
+                <textarea name="content" required class="rte w-full p-2 border rounded-md"></textarea>
                 <button type="submit" class="mt-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">Add Comment</button>
             </form>
         </div>
@@ -166,51 +183,91 @@
         </div>
 
     </div>
-@endsection
-<!-- Edit Modal -->
-<div id="editTimeModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">
-    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md w-96">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Edit Time Entry</h3>
+    <!-- Edit Modal -->
+    <div id="editTimeModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md w-96">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Edit Time Entry</h3>
 
-        <form id="editTimeForm" method="POST">
-            @csrf
-            @method('PATCH')
+            <form id="editTimeForm" method="POST">
+                @csrf
+                @method('PATCH')
 
-            <input type="hidden" name="entry_id" id="edit_entry_id">
+                <input type="hidden" name="entry_id" id="edit_entry_id">
 
-            <div class="flex items-center gap-2">
-                <label for="edit_hours" class="text-sm text-gray-700 dark:text-gray-300">Hours</label>
-                <input type="number" name="hours" id="edit_hours" min="0" class="w-16 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-1">
-            </div>
+                <div class="flex items-center gap-2">
+                    <label for="edit_hours" class="text-sm text-gray-700 dark:text-gray-300">Hours</label>
+                    <input type="number" name="hours" id="edit_hours" min="0" class="w-16 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-1">
+                </div>
 
-            <div class="flex items-center gap-2 mt-2">
-                <label for="edit_minutes" class="text-sm text-gray-700 dark:text-gray-300">Minutes</label>
-                <input type="number" name="minutes" id="edit_minutes" min="0" max="59" class="w-16 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-1">
-            </div>
+                <div class="flex items-center gap-2 mt-2">
+                    <label for="edit_minutes" class="text-sm text-gray-700 dark:text-gray-300">Minutes</label>
+                    <input type="number" name="minutes" id="edit_minutes" min="0" max="59" class="w-16 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white p-1">
+                </div>
 
-            <div class="mt-4 flex justify-between">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow-md transition-all">
-                    Save Changes
-                </button>
-                <button type="button" onclick="closeEditModal()" class="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
-            </div>
-        </form>
+                <div class="mt-4 flex justify-between">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow-md transition-all">
+                        Save Changes
+                    </button>
+                    <button type="button" onclick="closeEditModal()" class="bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
 
-<script>
-    function openEditModal(entryId, hours, minutes) {
-        document.getElementById("edit_entry_id").value = entryId;
-        document.getElementById("edit_hours").value = hours;
-        document.getElementById("edit_minutes").value = minutes;
-        document.getElementById("editTimeModal").classList.remove("hidden");
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            tinymce.init({
+                selector: 'textarea.rte',
+                skin: document.documentElement.classList.contains('dark') ? 'oxide-dark' : 'oxide',
+                content_css: document.documentElement.classList.contains('dark') ? 'dark' : 'default',
+                menubar: false,
+                plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+                toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+                branding: false,
+                height: 400,
+                images_upload_url: '/upload-image',
+                automatic_uploads: true,
+                file_picker_types: 'image file media',
+                images_file_types: 'jpg,svg,webp,png,gif',
+                images_upload_handler: function (blobInfo, success, failure) {
+                    let formData = new FormData();
+                    formData.append('file', blobInfo.blob(), blobInfo.filename());
 
-        let form = document.getElementById("editTimeForm");
-        form.action = `/time-entries/${entryId}/update`;
-    }
+                    fetch('/upload-image', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.location) {
+                            success(data.location); // Pass URL to TinyMCE
+                        } else {
+                            failure('Failed to receive valid image URL.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Upload failed:', error);
+                        failure('Upload failed. See console for details.');
+                    });
+                }
+            });
+        });
+        function openEditModal(entryId, hours, minutes) {
+            document.getElementById("edit_entry_id").value = entryId;
+            document.getElementById("edit_hours").value = hours;
+            document.getElementById("edit_minutes").value = minutes;
+            document.getElementById("editTimeModal").classList.remove("hidden");
 
-    function closeEditModal() {
-        document.getElementById("editTimeModal").classList.add("hidden");
-    }
-</script>
+            let form = document.getElementById("editTimeForm");
+            form.action = `/time-entries/${entryId}/update`;
+        }
+
+        function closeEditModal() {
+            document.getElementById("editTimeModal").classList.add("hidden");
+        }
+    </script>
+@endsection
 

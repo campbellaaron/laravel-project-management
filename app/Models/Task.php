@@ -60,6 +60,11 @@ class Task extends Model
         return $this->belongsTo(Project::class);
     }
 
+    public function attachments()
+    {
+        return $this->hasMany(Attachment::class);
+    }
+
     public function timeEntries()
     {
         return $this->hasMany(TimeEntry::class);

@@ -5,6 +5,8 @@ use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\FileUploadController;
+use App\Http\Controllers\ImageUploadController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\TimeTrackingController;
 use App\Http\Controllers\TimeReportController;
@@ -12,6 +14,7 @@ use App\Http\Controllers\TimeLogController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -34,6 +37,7 @@ Route::middleware(['auth', 'role:admin|super-admin'])->group(function () {
     Route::get('/time-logs/{id}/edit', [TimeLogController::class, 'edit'])->name('admin.time-logs.edit');
     Route::put('/time-logs/{id}', [TimeLogController::class, 'update'])->name('admin.time-logs.update');
     Route::delete('/time-logs/{id}', [TimeLogController::class, 'destroy'])->name('admin.time-logs.destroy');
+    Route::get('/files', [FileUploadController::class, 'index'])->name('files.index');
 
 });
 
@@ -43,6 +47,8 @@ Route::group(['middleware'=> 'role:admin|super-admin|manager'], function () {
     Route::get('projects/{project}/edit', [ProjectsController::class, 'edit'])->middleware('role:admin|super-admin|manager')->name('projects.edit');
     Route::get('/reports/time-logs', [TimeReportController::class, 'index'])->name('reports.time_logs');
     Route::get('/reports/export-csv', [TimeReportController::class, 'exportCsv'])->name('reports.export_csv');
+    Route::delete('/files/delete', [FileUploadController::class, 'destroy'])->name('files.delete');
+
 
 });
 
@@ -89,6 +95,23 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Image Upload Route
+    Route::post('/upload-image', function (Request $request) {
+        // Validate the uploaded file
+        $request->validate([
+            'file' => 'required|image|max:10240' // Max 10MB
+        ]);
+
+        // Store the file in 'public/uploads'
+        $path = $request->file('file')->store('uploads', 'public');
+
+        return response()->json([
+            'location' => asset("storage/$path"), // The URL TinyMCE will use
+        ]);
+    });
+
+    Route::post('/upload-file', [FileUploadController::class, 'store'])->name('upload.file');
 });
 
 require __DIR__.'/auth.php';

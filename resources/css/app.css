@@ -36,6 +36,10 @@
     font-weight: bold;
 }
 
+
+select.dt-input, select.dt-input option {
+    color: #0f2020 !important;
+}
 /* Projects Extra CSS */
 
 .hazardzone {

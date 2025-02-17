@@ -48,6 +48,17 @@ $(document).ready(function () {
 });
 
 document.addEventListener("DOMContentLoaded", function () {
+
+    appTimerTracker();
+
+});
+
+function appTimerTracker() {
+    // Check if we are on the task.show route
+    if (!window.location.pathname.match(/^\/tasks\/\d+$/)) {
+        return; // Exit script if not on task.show page
+    }
+
     const startButton = document.getElementById("start-timer");
     const stopButton = document.getElementById("stop-timer");
     const timerDisplay = document.getElementById("live-timer");
@@ -90,6 +101,7 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .catch(error => console.error("Error:", error));
     }
+
 
     // Handle Start Timer
     startButton.addEventListener("click", function () {
@@ -146,5 +158,4 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         })
         .catch(error => console.error("Error:", error));
-});
-
+}

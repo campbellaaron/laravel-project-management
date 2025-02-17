@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>@yield('title', 'Laravel App')</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -19,7 +19,7 @@
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900 flex">
             <!-- Sidebar -->
-            <div class="w-40 lg:w-64 bg-gray-800 text-white">
+            <div class="w-40 lg:w-64 bg-gray-900 dark:bg-gray-800 text-white">
                 @include('components.dashboard-sidebar') <!-- Sidebar component or partial -->
             </div>
 
@@ -60,5 +60,6 @@
               alertElement.style.display = 'none'; // Hides the alert
             }
           </script>
+          <script src="https://cdn.tiny.cloud/1/{{ env('TINYMCE_API_KEY') }}/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     </body>
 </html>
