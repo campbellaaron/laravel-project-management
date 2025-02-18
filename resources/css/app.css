@@ -40,6 +40,12 @@
 select.dt-input, select.dt-input option {
     color: #0f2020 !important;
 }
+
+.dt-layout-row {
+    margin: 0.5em 0;
+}
+
+
 /* Projects Extra CSS */
 
 .hazardzone {

@@ -14,7 +14,7 @@ class ProjectsController extends Controller
     // Display a list of tasks
     public function index()
     {
-        $projects = Project::with(['projectLead', 'users', 'tasks'])->withCount('tasks')->get();
+        $projects = Project::with(['projectLead', 'users', 'tasks', 'tasks.timeEntries'])->withCount('tasks')->get();
 
         return view('projects.index', compact('projects'));
     }

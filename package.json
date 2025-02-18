@@ -21,6 +21,7 @@
         "datatables.net": "^2.2.2",
         "datatables.net-dt": "^2.2.2",
         "easymde": "^2.18.0",
+        "fullcalendar": "^6.1.15",
         "tinymce": "^7.6.1"
     }
 }

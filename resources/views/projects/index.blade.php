@@ -8,7 +8,7 @@
         <a href="{{ route('projects.create') }}" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Create New Project</a>
         <div class="p-6 px-0 text-gray-800 dark:text-slate-300">
             <table class="projects-table mt-4 w-full min-w-max table-auto text-left datatable">
-              <thead class="bg-slate-700 dark:bg-slate-600 text-slate-950 dark:text-slate-100">
+              <thead class="bg-slate-400 dark:bg-slate-600 text-slate-950 dark:text-slate-100">
                 <tr>
                   <th class="cursor-pointer border-y border-blue-gray-100 p-4 transition-colors hover:bg-gray-500">
                     <p class="antialiased font-sans text-sm text-blue-gray-900 flex items-center justify-between gap-2 font-normal leading-none opacity-70">Project <x-fluentui-chevron-up-down-24 class="h-4 w-4"/></p>
@@ -36,7 +36,7 @@
                   </th>
                 </tr>
               </thead>
-              <tbody class="bg-slate-600 dark:bg-slate-800 text-gray-800 dark:text-slate-300">
+              <tbody class="bg-slate-300 dark:bg-slate-800 text-gray-800 dark:text-slate-300">
                 @foreach ($projects as $project)
                 @php
                     if ($project->status === "open") {
@@ -52,7 +52,7 @@
                             <div class="flex items-center gap-3">
                               <div class="flex flex-col">
                                 <p class="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal">{{ $project->name }}</p>
-                                <p class="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal opacity-70">Start date: {{ $project->start_date->format("M d, Y") }}</p>
+                                <p class="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal opacity-70">Start date: {{ $project->start_date }}</p>
                               </div>
                             </div>
                         </td>
@@ -87,7 +87,7 @@
                             <div class="flex flex-col">
                                 <p class="block antialiased font-sans text-sm text-center leading-normal text-blue-gray-900 font-normal">
                                     @php
-                                        $totalSeconds = max(0, $project->totalTrackedTime()); // Ensure no negatives
+                                        $totalSeconds = $project->totalTrackedTime();
                                         $hours = intdiv($totalSeconds, 3600);
                                         $minutes = intdiv($totalSeconds % 3600, 60);
                                         $seconds = $totalSeconds % 60;
@@ -104,7 +104,7 @@
                             </div>
                         </td>
                         <td class="p-4 border-b border-blue-gray-50">
-                            <p class="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal">Deadline: {{ $project->due_date ? $project->due_date->format("M d, Y") : "None" }}</p>
+                            <p class="block antialiased font-sans text-sm leading-normal text-blue-gray-900 font-normal">Deadline: {{ $project->due_date ? $project->due_date : "None" }}</p>
                         </td>
                         <td class="p-4 border-b border-blue-gray-50">
                             <div class="flex justify-evenly items-end">

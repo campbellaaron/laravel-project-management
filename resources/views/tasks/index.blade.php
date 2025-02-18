@@ -30,6 +30,7 @@
                     <th scope="col" class="px-6 py-3">Task ID</th>
                     <th scope="col" class="px-6 py-3">Title</th>
                     <th scope="col" class="px-6 py-3">Description</th>
+                    <th scope="col" class="px-6 py-3">Status</th>
                     <th scope="col" class="px-6 py-3">Project</th>
                     <th scope="col" class="px-6 py-3">Assigned To</th>
                     <th scope="col" class="px-6 py-3">Due Date</th>
@@ -53,9 +54,21 @@
                     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200 hover:bg-gray-300 dark:hover:bg-gray-800">
                         <th scope="row" class="px-6 py-4">{{ $task->task_key }}</th>
                         <th class="px-6 py-4 font-bold text-base lg:text-lg text-gray-900 dark:text-white"><a href="{{ route('tasks.show', $task) }}">{{ $task->title }}</a></th>
-                        <td class="px-6 py-4">{{ $task->description }}</td>
+                        <td class="px-6 py-4">{{ Str::limit(strip_tags($task->description), 30, '...') }}</td>
+                        <td class="p-4 border-b border-blue-gray-50">
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold
+                                @if($task->status === 'Not Started') bg-gray-500 text-white
+                                @elseif($task->status === 'In Progress') bg-blue-500 text-white
+                                @elseif($task->status === 'Under Review') bg-yellow-500 text-white
+                                @elseif($task->status === 'Completed') bg-green-500 text-white
+                                @elseif($task->status === 'On Hold') bg-red-500 text-white
+                                @elseif($task->status === 'Cancelled') bg-gray-700 text-white
+                                @endif">
+                                {{ $task->status }}
+                            </span>
+                        </td>
                         <td class="px-6 py-4">{{ $task->project->name }}</td>
-                        <td class="px-6 py-4 bold">{{ $task->assignedTo->first_name }}</td>
+                        <td class="px-6 py-4"><span class="flex justify-center"><img src="{{ $task->assignedTo->avatar }}" alt="{{ $task->assignedTo->full_name }}" class="w-6 h-6 rounded-full" title="{{ $task->assignedTo->full_name }}" /></span></td>
                         <td class="px-6 py-4">{{ $task->due_date ? $task->due_date->format('M d, Y') : 'No due date' }}</td>
                         <td class="px-6 py-4 uppercase text-white"><span class="{{ $priority_class }} rounded-md font-bold">{{ $task->priority }}</span></td>
                         <td class="px-4 py-4">

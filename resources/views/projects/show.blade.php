@@ -23,6 +23,8 @@
                 <div>
                     <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-500">Project: {{ $project->name }}</h2>
                     <p class="text-gray-900 dark:text-gray-500">Status: <span id="project-status" class="{{$project_status}} text-gray-200 py-1 px-2 rounded-md">{{ $project->formatted_status }}</span></p>
+                    <p class="text-gray-900 dark:text-gray-500">Project Start: {{ $project->start_date ? $project->start_date : "Not started yet" }}</p>
+                    <p class="text-gray-900 dark:text-gray-500">Project Deadline: {{ $project->due_date ? $project->due_date : "None" }}</p>
                 </div>
                 <div class="flex flex-col md:flex-row md:items-start px-3 py-4 hazardzone">
                     <span class="text-gray-900 dark:text-gray-500">Change Project Status: </span>
@@ -37,7 +39,7 @@
 
                     <!-- Project Edit Button for Admins -->
                     @if (auth()->user()->hasAnyRole(['admin','super-admin']))
-                    <a href="{{route('projects.edit', $project->id)}}" class="bg-white dark:bg-slate-600 p-6 text-gray-900 dark:text-gray-100 flex items-center rounded-md py-2 px-4 border border-transparent text-center "><x-fluentui-edit-48-o class="h-6 w-6 mr-1.5" /> Edit Project</a>
+                    <a href="{{route('projects.edit', $project->id)}}" class="bg-gray-300 dark:bg-slate-600 p-6 text-gray-900 dark:text-gray-100 flex items-center rounded-md py-2 px-4 border border-transparent text-center "><x-fluentui-edit-48-o class="h-6 w-6 mr-1.5" /> Edit Project</a>
                     @endif
 
                     <!-- Project Delete Button for Super Admins -->
@@ -139,9 +141,20 @@
                         }
                     @endphp
                         <tr class="border text-gray-800 dark:text-gray-300">
-                            <td class="p-4">WEB-002</td>
-                            <td class="p-4"><a href="{{route('tasks.show', $task->id)}}" class="text-md text-bold text-slate-900 dark:text-slate-300"><span>{{ $task->title }}</span></a></td>
-                            <td class="p-4">In Progress</td>
+                            <td class="p-4">{{$task->task_key}}</td>
+                            <td class="p-4"><a href="{{route('tasks.show', $task->id)}}" class="text-base underline text-bold text-slate-900 dark:text-slate-300"><span><strong>{{ $task->title }}</strong></span></a></td>
+                            <td class="p-4">
+                                <span class="px-3 py-1 rounded-full text-xs font-semibold
+                                    @if($task->status === 'Not Started') bg-gray-500 text-white
+                                    @elseif($task->status === 'In Progress') bg-blue-500 text-white
+                                    @elseif($task->status === 'Under Review') bg-yellow-500 text-white
+                                    @elseif($task->status === 'Completed') bg-green-500 text-white
+                                    @elseif($task->status === 'On Hold') bg-red-500 text-white
+                                    @elseif($task->status === 'Cancelled') bg-gray-700 text-white
+                                    @endif">
+                                    {{ $task->status }}
+                                </span>
+                            </td>
                             <td class="p-4">{{ $task->assignedTo->full_name }}</td>
                             <td class="p-4">@php
                                 $totalSeconds = max(0, $task->totalTrackedTime()); // Ensure no negatives
@@ -150,8 +163,8 @@
                                 $seconds = $totalSeconds % 60;
                             @endphp
                             {{ sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds) }}</td>
-                            <td class="p-4"><span class="{{$priority_class}}">{{$task->priority}}</span></td>
-                            <td class="p-4">{{ $task->due_date }}</td>
+                            <td class="p-4"><span class="text-gray-100 capitalize font-semibold {{$priority_class}}">{{$task->priority}}</span></td>
+                            <td class="p-4">{{ $task->due_date ? $task->due_date->format('M d, Y') : 'No due date' }}</td>
                         </tr>
                     @endforeach
                     @if ($tasks->isEmpty())

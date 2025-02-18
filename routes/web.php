@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\Project;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TeamController;
@@ -14,7 +16,9 @@ use App\Http\Controllers\TimeLogController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -96,22 +100,66 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Image Upload Route
-    Route::post('/upload-image', function (Request $request) {
-        // Validate the uploaded file
-        $request->validate([
-            'file' => 'required|image|max:10240' // Max 10MB
-        ]);
+    // Calendar Route
+    Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
+    Route::get('/calendar/events', [CalendarController::class, 'fetchEvents'])->name('calendar.events');
+    Route::post('/tasks/{task}/update-date', function (Request $request, Task $task) {
+        $task->update(['due_date' => Carbon::parse($request->due_date)]);
+        return response()->json(['success' => true]);
+    })->name('tasks.update-date');
 
-        // Store the file in 'public/uploads'
-        $path = $request->file('file')->store('uploads', 'public');
+    Route::post('/projects/{project}/update-dates', function (Request $request, Project $project) {
+        try {
+            // Ensure the data is correct
+            Log::info("Received update for Project ID: {$project->id}", $request->all());
 
-        return response()->json([
-            'location' => asset("storage/$path"), // The URL TinyMCE will use
-        ]);
+            // Validate the request
+            $request->validate([
+                'start_date' => 'required|date',
+                'due_date' => 'required|date|after_or_equal:start_date'
+            ]);
+
+            // Update project dates
+            $project->update([
+                'start_date' => Carbon::parse($request->start_date),
+                'due_date' => Carbon::parse($request->due_date),
+            ]);
+
+            return response()->json(['success' => true, 'message' => 'Project dates updated']);
+        } catch (\Exception $e) {
+            Log::error("Error updating project dates: " . $e->getMessage());
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
     });
 
-    Route::post('/upload-file', [FileUploadController::class, 'store'])->name('upload.file');
+    Route::post('/projects/{project}/update-due-date', function (Request $request, Project $project) {
+        $project->update(['due_date' => Carbon::parse($request->due_date)]);
+        return response()->json(['success' => true]);
+    })->name('projects.update-due-date');
+
 });
+
+// Image Upload Route
+Route::post('/upload-image', function (Request $request) {
+    // Validate the uploaded file
+    $request->validate([
+        'file' => 'required|image|max:10240' // Max 10MB
+    ]);
+
+    // Store the file in 'public/uploads'
+    $path = $request->file('file')->store('uploads', 'public');
+
+    $imageUrl = asset("storage/$path");
+
+    return response()->json([
+        'location' => $imageUrl,
+        'data' => [
+            'src' => $imageUrl,
+            'value' => $imageUrl
+        ],
+    ], 200, ['Content-Type' => 'application/json'], JSON_UNESCAPED_SLASHES);
+});
+
+Route::post('/upload-file', [FileUploadController::class, 'store'])->name('upload.file');
 
 require __DIR__.'/auth.php';

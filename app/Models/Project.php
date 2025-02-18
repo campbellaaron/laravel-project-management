@@ -59,16 +59,26 @@ class Project extends Model
 
     public function totalTrackedTime(): int
     {
-        return $this->tasks->sum(function ($task) {
-            return $task->timeEntries()
-                ->whereNotNull('ended_at')
-                ->get()
-                ->sum(function ($entry) {
-                    $started_at = Carbon::parse($entry->started_at);
-                    $ended_at = Carbon::parse($entry->ended_at);
-                    return max(0, $ended_at->diffInSeconds($started_at));
-                });
+        $this->loadMissing('tasks.timeEntries'); // Ensures related tasks & time entries are loaded
+
+        $totalSeconds = $this->tasks->sum(function ($task) {
+            return $task->timeEntries->whereNotNull('ended_at')->sum(function ($entry) {
+                return Carbon::parse($entry->started_at)->diffInSeconds(Carbon::parse($entry->ended_at));
+            });
         });
+
+        \Log::info("Total tracked time for Project ID {$this->id}: {$totalSeconds} seconds");
+        return $totalSeconds;
+    }
+
+    public function getStartDateAttribute($value)
+    {
+        return Carbon::parse($value)->setTimezone(auth()->user()->timezone ?? 'UTC')->format('M d, Y');
+    }
+
+    public function getDueDateAttribute($value)
+    {
+        return Carbon::parse($value)->setTimezone(auth()->user()->timezone ?? 'UTC')->format('M d, Y');
     }
 
 }

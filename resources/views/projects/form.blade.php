@@ -126,38 +126,77 @@
             plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
             toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
             branding: false,
-            height: 300,
-            setup: function (editor) {
-                editor.on('init', function () {
-                    let mode = document.documentElement.classList.contains('dark') ? '#E5E7EB' : '#111827'; // Tailwind light/dark mode colors
-                    editor.getBody().style.color = mode;
-                });
-            },
-            images_upload_url: '/upload-image', // Route to handle uploads
+            height: 400,
+            images_upload_url: '/upload-image',
+            a11y_advanced_options: true,
             automatic_uploads: true,
+            image_title: true,
+            images_file_types: 'jpg,svg,webp,png,gif',
+            // ✅ Use File Picker for Local Image Selection (Base64)
             file_picker_types: 'image',
-            images_upload_handler: function (blobInfo, success, failure) {
-                let formData = new FormData();
-                formData.append('file', blobInfo.blob(), blobInfo.filename());
+            file_picker_callback: (cb, value, meta) => {
+                const input = document.createElement('input');
+                input.setAttribute('type', 'file');
+                input.setAttribute('accept', 'image/*');
 
-                fetch('/upload-image', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.location) {
-                        success(data.location);
-                    } else {
-                        failure('Image upload failed');
-                    }
-                })
-                .catch(error => failure('Image upload error: ' + error.message));
+                input.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+
+                    reader.onload = () => {
+                        const id = 'blobid' + (new Date()).getTime();
+                        const blobCache = tinymce.activeEditor.editorUpload.blobCache;
+                        const base64 = reader.result.split(',')[1];
+                        const blobInfo = blobCache.create(id, file, base64);
+                        blobCache.add(blobInfo);
+
+                        cb(blobInfo.blobUri(), { title: file.name });
+                    };
+
+                    reader.readAsDataURL(file);
+                });
+
+                input.click();
+            },
+
+            // ✅ Server-Side Upload for Persistent Storage (With Promise)
+            images_upload_url: '/upload-image', // Laravel Upload Route
+            automatic_uploads: true,
+            images_upload_handler: function (blobInfo) {
+                return new Promise((resolve, reject) => {
+                    let xhr = new XMLHttpRequest();
+                    xhr.open('POST', '/upload-image', true);
+                    xhr.setRequestHeader("X-CSRF-TOKEN", document.querySelector('meta[name="csrf-token"]').content);
+
+                    xhr.onload = function () {
+                        let response;
+                        try {
+                            response = JSON.parse(xhr.responseText);
+                        } catch (e) {
+                            reject('Invalid JSON response from server');
+                            return;
+                        }
+
+                        if (xhr.status === 200 && response.location) {
+                            resolve(response.location);
+                        } else {
+                            reject(response.error || 'Image upload failed');
+                        }
+                    };
+
+                    xhr.onerror = function () {
+                        reject('Image upload failed due to network error.');
+                    };
+
+                    let formData = new FormData();
+                    formData.append('file', blobInfo.blob(), blobInfo.filename());
+
+                    xhr.send(formData);
+                });
             }
+
         });
+
         const form = document.getElementById("projects-form");
         const fileInput = document.getElementById("attachments");
         const maxSize = 10 * 1024 * 1024; // 10MB in bytes

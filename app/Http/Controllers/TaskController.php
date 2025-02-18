@@ -57,10 +57,12 @@ class TaskController extends Controller
     $request->validate([
         'title' => 'required|string|max:255',
         'description' => 'required|string',
+        'status' => 'required|in:Not Started,In Progress,Under Review,Completed,On Hold,Cancelled',
         'assigned_to' => 'required|exists:users,id',
         'due_date' => 'nullable|date',
         'priority' => 'required|in:low,medium,high,urgent',
         'project_id' => 'required|exists:projects,id',
+        'attachments' => 'nullable|array',
         'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx,svg,ai,psd,gif|max:10240',
     ]);
 
@@ -90,7 +92,10 @@ class TaskController extends Controller
         // Handle file uploads
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
-                $path = $file->store('attachments', 'public');
+                // Generate a unique filename to prevent conflicts
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('attachments', $filename, 'public');
+
                 $task->attachments()->create(['path' => $path]);
             }
         }
@@ -127,24 +132,22 @@ class TaskController extends Controller
     // Update the specified task in the database
     public function update(Request $request, Task $task)
     {
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'assigned_to' => 'required|exists:users,id',
+            'status' => 'required|in:Not Started,In Progress,Under Review,Completed,On Hold,Cancelled',
+            'assigned_to' => 'nullable|exists:users,id',
+            'priority' => 'required|in:low,medium,high,urgent',
             'due_date' => 'nullable|date',
             'project_id' => 'required|exists:projects,id',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx,svg,ai,psd,gif|max:10240',
         ]);
 
         // Store the old assignee before updating
         $oldAssigneeId = $task->assigned_to;
 
-        $task->update([
-            'title' => $request->title,
-            'description' => $request->description,
-            'assigned_to' => $request->assigned_to,
-            'due_date' => $request->due_date,
-            'project_id' => $request->project_id,
-        ]);
+        $task->update($validated);
 
         // Log the activity for task creation
         Activity::create([
@@ -171,19 +174,40 @@ class TaskController extends Controller
             ]);
         }
 
+        // Handle file uploads
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                // Generate a unique filename to prevent conflicts
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('attachments', $filename, 'public');
+
+                $task->attachments()->create(['path' => $path]);
+            }
+        }
+
         return redirect()->route('tasks.show', $task->id)->with('success', 'Task updated successfully!');
     }
 
     public function complete(Task $task)
     {
-        $task->completed = !$task->completed;
-        $task->save();
+        if ($task->status === 'Completed') {
+            $task->status = 'In Progress'; // Allow toggling between In Progress and Completed
+            // Log the activity for task completion
+            Activity::create([
+                'user_id' => auth()->id(),
+                'description' => auth()->user()->first_name . ' marked the task ' . $task->title . ' as "In Progress"',
+            ]);
+        } else {
+            $task->status = 'Completed';
 
-        // Log the activity for task creation
-        Activity::create([
-            'user_id' => auth()->id(),
-            'description' => auth()->user()->first_name . ' marked the task ' . $task->title . ' as complete',
-        ]);
+            // Log the activity for task completion
+            Activity::create([
+                'user_id' => auth()->id(),
+                'description' => auth()->user()->first_name . ' marked the task ' . $task->title . ' as "Complete"',
+            ]);
+        }
+
+        $task->save();
 
          // Redirect back to the task page
         return redirect()->route('tasks.show', $task->id)->with('success', 'Task status updated successfully.');
@@ -193,13 +217,18 @@ class TaskController extends Controller
     public function storeComment(Request $request, Task $task)
     {
         $request->validate([
-            'content' => 'required|string|max:255',
+            'content' => 'required|string|min:3',
+        ], [
+            'content.required' => 'The comment field is required.',
+            'content.min' => 'The comment must be at least 3 characters long.',
         ]);
 
-        $task->comments()->create([
-            'content' => $request->content,
-            'user_id' => auth()->id(),
-        ]);
+        $comment = new Comment();
+        $comment->user_id = auth()->id();
+        $comment->task_id = $task->id;
+        $comment->content = $request->input('content'); // Store TinyMCE content
+
+        $comment->save();
 
         // Log the activity for task creation
         Activity::create([
@@ -207,7 +236,7 @@ class TaskController extends Controller
             'description' => auth()->user()->first_name . ' commented on ' . $task->title,
         ]);
 
-        return redirect()->route('tasks.show', $task);
+        return redirect()->back()->with('success', 'Comment added successfully.');
     }
 
     public function isTracking(Task $task)

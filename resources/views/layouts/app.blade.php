@@ -19,7 +19,7 @@
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100 dark:bg-gray-900 flex">
             <!-- Sidebar -->
-            <div class="w-40 lg:w-64 bg-gray-900 dark:bg-gray-800 text-white">
+            <div class="w-40 lg:w-64 bg-cyan-300 dark:bg-gray-800 text-slate-800 dark:text-white">
                 @include('components.dashboard-sidebar') <!-- Sidebar component or partial -->
             </div>
 
@@ -29,7 +29,7 @@
 
                 <!-- Page Heading -->
                 @isset($header)
-                    <header class="bg-white dark:bg-gray-800 shadow">
+                    <header class="bg-cyan-500 dark:bg-gray-800 shadow">
                         <div class="max-w-8xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                             {{ $header }}
                         </div>

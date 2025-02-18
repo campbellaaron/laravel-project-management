@@ -51,7 +51,7 @@
                     <input type="hidden" name="upload_folder" value="tasks">
                     <textarea name="description" id="description" rows="4"
                         class="rte mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-                        required>{{ old('description', $task->description ?? '') }}</textarea>
+                        >{{ old('description', $task->description ?? '') }}</textarea>
                     @error('description')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
@@ -85,6 +85,19 @@
                     </select>
                 </div>
 
+                <!-- Status -->
+                <div class="mb-4">
+                    <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Task Status</label>
+                    <select name="status" id="status"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
+                        @foreach(['Not Started', 'In Progress', 'Under Review', 'Completed', 'On Hold', 'Cancelled'] as $status)
+                            <option value="{{ $status }}" {{ old('status', $task->status) == $status ? 'selected' : '' }}>
+                                {{ $status }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <!-- Task Priority -->
                 <div>
                     <label for="priority" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Priority</label>
@@ -106,6 +119,7 @@
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50">
                 </div>
 
+                <!-- Attach files less than or equal to 10MB -->
                 <div class="mb-4">
                     <label for="attachments" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Attachments</label>
                     <input type="file" name="attachments[]" id="attachments" multiple
@@ -126,7 +140,7 @@
             </form>
         </div>
     </div>
-    <script src="https://cdn.tiny.cloud/1/{{ env('TINYMCE_API_KEY') }}/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.tiny.cloud/1/{{ env('TINYMCE_API_KEY') }}/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -140,21 +154,73 @@
             branding: false,
             height: 400,
             images_upload_url: '/upload-image',
+            a11y_advanced_options: true,
             automatic_uploads: true,
-            file_picker_types: 'image file media',
+            image_title: true,
             images_file_types: 'jpg,svg,webp,png,gif',
-            images_upload_handler: function (blobInfo, success, failure) {
-                let formData = new FormData();
-                formData.append('file', blobInfo.blob(), blobInfo.filename());
+            // ✅ Use File Picker for Local Image Selection (Base64)
+            file_picker_types: 'image',
+            file_picker_callback: (cb, value, meta) => {
+                const input = document.createElement('input');
+                input.setAttribute('type', 'file');
+                input.setAttribute('accept', 'image/*');
 
-                fetch('/upload-image', {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
-                    }
+                input.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+
+                    reader.onload = () => {
+                        const id = 'blobid' + (new Date()).getTime();
+                        const blobCache = tinymce.activeEditor.editorUpload.blobCache;
+                        const base64 = reader.result.split(',')[1];
+                        const blobInfo = blobCache.create(id, file, base64);
+                        blobCache.add(blobInfo);
+
+                        cb(blobInfo.blobUri(), { title: file.name });
+                    };
+
+                    reader.readAsDataURL(file);
+                });
+
+                input.click();
+            },
+
+            // ✅ Server-Side Upload for Persistent Storage (With Promise)
+            images_upload_url: '/upload-image', // Laravel Upload Route
+            automatic_uploads: true,
+            images_upload_handler: function (blobInfo) {
+                return new Promise((resolve, reject) => {
+                    let xhr = new XMLHttpRequest();
+                    xhr.open('POST', '/upload-image', true);
+                    xhr.setRequestHeader("X-CSRF-TOKEN", document.querySelector('meta[name="csrf-token"]').content);
+
+                    xhr.onload = function () {
+                        let response;
+                        try {
+                            response = JSON.parse(xhr.responseText);
+                        } catch (e) {
+                            reject('Invalid JSON response from server');
+                            return;
+                        }
+
+                        if (xhr.status === 200 && response.location) {
+                            resolve(response.location);
+                        } else {
+                            reject(response.error || 'Image upload failed');
+                        }
+                    };
+
+                    xhr.onerror = function () {
+                        reject('Image upload failed due to network error.');
+                    };
+
+                    let formData = new FormData();
+                    formData.append('file', blobInfo.blob(), blobInfo.filename());
+
+                    xhr.send(formData);
                 });
             }
+
         });
 
 
@@ -163,15 +229,19 @@
         const fileInput = document.getElementById("attachment");
         const maxSize = 10 * 1024 * 1024; // 10MB in bytes
 
-        form.addEventListener("submit", function (event) {
-            if (fileInput.files.length > 0) {
-                let file = fileInput.files[0];
-                if (file.size > maxSize) {
-                    alert("File size exceeds 10MB. Please choose a smaller file.");
-                    event.preventDefault(); // Stop form submission
+        if (form && fileInput) { // Ensure both form and file input exist
+            form.addEventListener("submit", function (event) {
+                if (fileInput.files.length > 0) {
+                    let file = fileInput.files[0];
+                    let maxSize = 10 * 1024 * 1024; // 10MB in bytes
+
+                    if (file.size > maxSize) {
+                        alert("File size exceeds 10MB. Please choose a smaller file.");
+                        event.preventDefault(); // Stop form submission
+                    }
                 }
-            }
-        });
+            });
+        }
 });
 </script>
 @endsection

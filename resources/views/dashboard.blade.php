@@ -109,13 +109,12 @@
                                     </li>
                                 @endforeach
                             </ul>
-                            <a href="{{ route('tasks.index') }}" class="text-blue-500 text-sm mt-2 block">View all tasks</a>
+                            <a href="{{ route('tasks.index', ['filter' => 'all']) }}" class="text-blue-500 text-sm mt-2 block">View all tasks</a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    @endsection
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             // Mark Single Notification as Read
@@ -164,5 +163,6 @@
             });
         });
     </script>
+    @endsection
 
 </x-app-layout>

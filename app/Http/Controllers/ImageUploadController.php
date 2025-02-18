@@ -8,17 +8,15 @@ use Illuminate\Http\JsonResponse;
 
 class ImageUploadController extends Controller
 {
-    public function store(Request $request): JsonResponse
+    public function store(Request $request)
     {
         $request->validate([
-            'image' => 'required|image|mimes:jpg,jpeg,png,gif|max:10240' // Max 10MB
+            'file' => 'required|image|max:10240', // Max 10MB
         ]);
 
-        $path = $request->file('image')->store('uploads', 'public');
+        $path = $request->file('file')->store('uploads', 'public');
 
-        return response()->json([
-            'location' => Storage::url($path) // Return the image URL to TinyMCE
-        ]);
+        return response()->json(['location' => Storage::url($path)]);
     }
 }
 
