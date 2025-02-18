@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Activity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Task;
 use App\Models\Project;
@@ -19,14 +20,12 @@ class DashboardController extends Controller
         // Get unread notifications for the authenticated user
         $notifications = $user->unreadNotifications;
 
-        // Fetch the latest incomplete tasks assigned to the current user or all tasks if the user is an admin
+        // Fetch latest tasks based on roles
         if ($user->hasAnyRole('admin|super-admin|manager')) {
-            // If the user is an admin or super-admin, show all incomplete tasks
-            $latestTasks = Task::where('completed', false)->latest()->take(5)->get();
+            $latestTasks = Task::whereNotIn('status', ['Completed'])->latest()->take(5)->get();
         } else {
-            // If the user is not an admin, only show the tasks assigned to them
             $latestTasks = Task::where('assigned_to', $user->id)
-                            ->where('completed', false)
+                            ->whereNotIn('status', ['Completed'])
                             ->latest()
                             ->take(5)
                             ->get();
@@ -40,13 +39,40 @@ class DashboardController extends Controller
 
         // Currently Open/In-Progress Projects
         $projects = Project::withCount(['tasks' => function ($query) {
-            $query->where('completed', true);
+            $query->where('status', 'Completed');
         }])->get();
 
-        // Completed Task stats
-        $completedTasksCount = Task::where('completed', true)->count();
+        // Count of tasks per status
+        $taskStatusCounts = Task::select('status', DB::raw('count(*) as count'))
+        ->groupBy('status')
+        ->pluck('count', 'status');
+
+        // Count of completed tasks
+        $completedTasksCount = Task::where('status', 'Completed')->count();
+
+        // Productivity: Count tasks completed per user
+        $userProductivity = User::withCount(['tasks as completed_tasks' => function ($query) {
+            $query->where('status', 'Completed');
+        }])->get()->pluck('completed_tasks', 'full_name');
+
+        // **New Feature**: Calculate Average Completion Time (in hours)
+        $averageCompletionTime = Task::where('status', 'Completed')
+        ->whereNotNull('created_at')
+        ->whereNotNull('updated_at')
+        ->select(DB::raw("AVG(TIMESTAMPDIFF(SECOND, created_at, updated_at)) as avg_time"))
+        ->value('avg_time');
 
         // Pass notifications and other data to the view
-        return view('dashboard', compact('notifications', 'latestTasks', 'newUsers', 'recentActivity', 'completedTasksCount', 'projects'));
+        return view('dashboard', compact(
+            'notifications',
+            'latestTasks',
+            'newUsers',
+            'recentActivity',
+            'completedTasksCount',
+            'taskStatusCounts',
+            'projects',
+            'userProductivity',
+            'averageCompletionTime'
+        ));
     }
 }

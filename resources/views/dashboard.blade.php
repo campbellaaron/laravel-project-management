@@ -59,6 +59,18 @@
 
                         <!-- Show admin content -->
                         @if(auth()->user()->hasAnyRole(['super-admin', 'admin', 'manager']))
+                            <!-- Task Status Breakdown Chart -->
+                            <div class="bg-white p-4 shadow-sm rounded-lg shadow">
+                                <h3 class="text-lg font-semibold">Task Status Breakdown</h3>
+                                <canvas id="taskStatusChart"></canvas>
+                            </div>
+
+                            <!-- User Productivity Chart -->
+                            <div class="bg-white p-4 shadow-sm rounded-lg shadow">
+                                <h3 class="text-lg font-semibold">User Productivity</h3>
+                                <canvas id="userProductivityChart"></canvas>
+                            </div>
+
                             <!-- Newest Users Card -->
                             <div class="bg-white p-4 shadow-sm rounded-lg">
                                 <h3 class="text-lg font-semibold">Newest Users</h3>
@@ -80,6 +92,18 @@
                                 <h3 class="text-lg font-semibold">Completed Tasks</h3>
                                 <p class="mt-2 text-2xl">{{ $completedTasksCount }}</p>
                                 <a href="{{ route('tasks.index') }}" class="text-blue-500 text-sm mt-2 block">View all completed tasks</a>
+                            </div>
+
+                            <!-- Average Completion Time -->
+                            <div class="bg-white p-6 shadow-sm rounded-lg shadow text-center">
+                                <h3 class="text-lg font-semibold">Average Task Completion Time</h3>
+                                <p class="text-2xl font-bold text-gray-700">
+                                    @if ($averageCompletionTime)
+                                        {{ gmdate("H:i:s", $averageCompletionTime) }} hours
+                                    @else
+                                        No completed tasks yet
+                                    @endif
+                                </p>
                             </div>
 
                             <!-- Project Progress Card -->
@@ -115,8 +139,43 @@
                 </div>
             </div>
         </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            // 🟢 TASK STATUS CHART
+            const taskStatusCtx = document.getElementById('taskStatusChart').getContext('2d');
+            new Chart(taskStatusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: {!! json_encode(array_keys($taskStatusCounts->toArray())) !!},
+                    datasets: [{
+                        label: 'Task Status',
+                        data: {!! json_encode(array_values($taskStatusCounts->toArray())) !!},
+                        backgroundColor: ['#4CAF50', '#FF9800', '#F44336', '#9C27B0', '#2196F3'],
+                    }]
+                }
+            });
+
+            // 🟢 USER PRODUCTIVITY CHART
+            const userProductivityCtx = document.getElementById('userProductivityChart').getContext('2d');
+            new Chart(userProductivityCtx, {
+                type: 'bar',
+                data: {
+                    labels: {!! json_encode(array_keys($userProductivity->toArray())) !!},
+                    datasets: [{
+                        label: 'Completed Tasks',
+                        data: {!! json_encode(array_values($userProductivity->toArray())) !!},
+                        backgroundColor: '#42A5F5'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
             // Mark Single Notification as Read
             document.querySelectorAll(".mark-as-read").forEach(button => {
                 button.addEventListener("click", function (event) {
