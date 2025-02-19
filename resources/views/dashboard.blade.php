@@ -81,13 +81,6 @@
                                 <canvas id="userProductivityChart"></canvas>
                             </div>
 
-                            <!-- Completed Tasks Statistics Card -->
-                            <div class="bg-white p-4 shadow-sm rounded-lg">
-                                <h3 class="text-lg font-semibold">Completed Tasks</h3>
-                                <p class="mt-2 text-2xl">{{ $completedTasksCount }}</p>
-                                <a href="{{ route('tasks.index', ['status' => 'Completed', 'all' => true]) }}" class="text-blue-500 text-sm mt-2 block">View all completed tasks</a>
-                            </div>
-
                             <!-- Average Completion Time -->
                             <div class="bg-white p-6 shadow-sm rounded-lg shadow text-center">
                                 <h3 class="text-lg font-semibold">Average Task Completion Time</h3>
