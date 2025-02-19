@@ -12,7 +12,7 @@ use App\Models\Project;
 
 class DashboardController extends Controller
 {
-    public function dashboard()
+    public function dashboard(Request $request)
     {
         // Get the authenticated user
         $user = Auth::user();
@@ -42,6 +42,16 @@ class DashboardController extends Controller
             $query->where('status', 'Completed');
         }])->get();
 
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        $tasksQuery = Task::query();
+
+        if ($startDate && $endDate) {
+            $tasksQuery->whereBetween('created_at', [$startDate, $endDate]);
+        }
+
+
         // Count of tasks per status
         $taskStatusCounts = Task::select('status', DB::raw('count(*) as count'))
         ->groupBy('status')
@@ -69,6 +79,8 @@ class DashboardController extends Controller
             'newUsers',
             'recentActivity',
             'completedTasksCount',
+            'startDate',
+            'endDate',
             'taskStatusCounts',
             'projects',
             'userProductivity',

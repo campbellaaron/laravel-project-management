@@ -48,7 +48,7 @@
                     </x-responsive-nav-link>
                 </li>
                 <li>
-                    <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('Reports')"  class="text-gray-800 dark:text-gray-300 hover:text-gray-600 dark:hover:text-white inline-flex">
+                    <x-responsive-nav-link :href="route('reports.index')" :active="request()->routeIs('Reports')"  class="text-gray-800 dark:text-gray-300 hover:text-gray-600 dark:hover:text-white inline-flex">
                         <x-solar-chart-linear class="w-5 h-5 mr-2"/> {{ __('Reports') }}
                     </x-responsive-nav-link>
                 </li>

@@ -14,6 +14,7 @@ use App\Http\Controllers\TimeTrackingController;
 use App\Http\Controllers\TimeReportController;
 use App\Http\Controllers\TimeLogController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -46,13 +47,16 @@ Route::middleware(['auth', 'role:admin|super-admin'])->group(function () {
 });
 
 Route::group(['middleware'=> 'role:admin|super-admin|manager'], function () {
-    // Block 'user' role from creating or editing projects
+    // Block 'user' role from doing or accessing the following
     Route::get('projects/create', [ProjectsController::class, 'create'])->middleware('role:admin|super-admin|manager')->name('projects.create');
     Route::get('projects/{project}/edit', [ProjectsController::class, 'edit'])->middleware('role:admin|super-admin|manager')->name('projects.edit');
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
     Route::get('/reports/time-logs', [TimeReportController::class, 'index'])->name('reports.time_logs');
+    Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
     Route::get('/reports/export-csv', [TimeReportController::class, 'exportCsv'])->name('reports.export_csv');
+    Route::get('/reports/export-tasks-csv', [ReportController::class, 'exportTasksCsv'])->name('reports.export-tasks-csv');
     Route::delete('/files/delete', [FileUploadController::class, 'destroy'])->name('files.delete');
-
 
 });
 

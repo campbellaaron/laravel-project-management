@@ -4,6 +4,10 @@
 
 @section('content')
 <div class="p-3 flex flex-col items-start justify-center">
+    <h2 class="text-xl font-semibold text-amber-600 dark:text-gray-200">
+        {{ request('status') ? 'Tasks - ' . request('status') : 'All Tasks' }}
+    </h2>
+
     <div class="p-2 flex items-start justify-between gap-4">
         <a href="{{ route('tasks.create') }}" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">Create New Task</a>
 

@@ -91,9 +91,11 @@
                     <select name="status" id="status"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                         @foreach(['Not Started', 'In Progress', 'Under Review', 'Completed', 'On Hold', 'Cancelled'] as $status)
-                            <option value="{{ $status }}" {{ old('status', $task->status) == $status ? 'selected' : '' }}>
-                                {{ $status }}
-                            </option>
+                        <option value="{{ $status }}"
+                            {{ old('status', isset($task) ? $task->status : '') == $status ? 'selected' : '' }}>
+                            {{ $status }}
+                        </option>
+
                         @endforeach
                     </select>
                 </div>

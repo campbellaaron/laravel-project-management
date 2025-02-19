@@ -20,6 +20,12 @@ class TaskController extends Controller
     public function index(Request $request)
     {
         $filter = $request->query('filter', 'my'); // Default to 'my' tasks
+        $query = Task::query();
+
+        // Check if a status filter is applied
+        if ($request->has('status')) {
+            $query->where('status', $request->input('status'));
+        }
 
         if ($filter === 'all') {
             // Show all tasks with assigned users & projects

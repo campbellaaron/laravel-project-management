@@ -59,6 +59,16 @@
 
                         <!-- Show admin content -->
                         @if(auth()->user()->hasAnyRole(['super-admin', 'admin', 'manager']))
+                            <!-- Quick Reports links -->
+                            <div class="bg-white shadow-md rounded-lg p-6">
+                                <h3 class="text-lg font-semibold">Quick Reports</h3>
+                                <p class="text-gray-600">Need reports fast? Click below.</p>
+                                <div class="mt-4 space-x-4 flex flex-col items-baseline gap-2">
+                                    <a href="{{ route('reports.export', ['type' => 'tasks']) }}" class="bg-blue-600 text-white px-4 py-2 rounded">Download Tasks</a>
+                                    <a href="{{ route('reports.export', ['type' => 'projects']) }}" class="bg-green-600 text-white px-4 py-2 rounded">Download Projects</a>
+                                </div>
+                            </div>
+
                             <!-- Task Status Breakdown Chart -->
                             <div class="bg-white p-4 shadow-sm rounded-lg shadow">
                                 <h3 class="text-lg font-semibold">Task Status Breakdown</h3>
@@ -71,27 +81,11 @@
                                 <canvas id="userProductivityChart"></canvas>
                             </div>
 
-                            <!-- Newest Users Card -->
-                            <div class="bg-white p-4 shadow-sm rounded-lg">
-                                <h3 class="text-lg font-semibold">Newest Users</h3>
-                                <div class="">
-                                    <ul class="mt-2">
-                                        @foreach ($newUsers as $user)
-                                            <li class="flex justify-between mb-2">
-                                                <span>{{ $user->name }}</span>
-                                                <span class="text-sm text-gray-500">{{ $user->created_at->format('M d, Y') }}</span>
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                    <a href="{{ route('users.index') }}" class="text-blue-500 text-sm mt-2 block">View all users</a>
-                                </div>
-                            </div>
-
                             <!-- Completed Tasks Statistics Card -->
                             <div class="bg-white p-4 shadow-sm rounded-lg">
                                 <h3 class="text-lg font-semibold">Completed Tasks</h3>
                                 <p class="mt-2 text-2xl">{{ $completedTasksCount }}</p>
-                                <a href="{{ route('tasks.index') }}" class="text-blue-500 text-sm mt-2 block">View all completed tasks</a>
+                                <a href="{{ route('tasks.index', ['status' => 'Completed', 'all' => true]) }}" class="text-blue-500 text-sm mt-2 block">View all completed tasks</a>
                             </div>
 
                             <!-- Average Completion Time -->
@@ -120,6 +114,23 @@
                                     @endforeach
                                 </ul>
                             </div>
+
+                            <!-- Newest Users Card -->
+                            <div class="bg-white p-4 shadow-sm rounded-lg">
+                                <h3 class="text-lg font-semibold">Newest Users</h3>
+                                <div class="">
+                                    <ul class="mt-2">
+                                        @foreach ($newUsers as $user)
+                                            <li class="flex justify-between mb-2">
+                                                <span>{{ $user->name }}</span>
+                                                <span class="text-sm text-gray-500">{{ $user->created_at->format('M d, Y') }}</span>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                    <a href="{{ route('users.index') }}" class="text-blue-500 text-sm mt-2 block">View all users</a>
+                                </div>
+                            </div>
+
                         @endif
 
                         <!-- Latest User's Incomplete Tasks Card -->
